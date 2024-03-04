@@ -7,13 +7,20 @@
 #include <time.h>        // Used with srand() to init random seed
 
 //======================================================================
-// Public Method: init
-// Description:   Initializes the LED pins as outputs
+// Constructor
 //======================================================================
-void LEDInterface::init() {
+LEDInterface::LEDInterface() {
     // Set LED pins as output
     LEDS_DDR |= (1 << LED_GREEN_BIT) | (1 << LED_RED_BIT) | 
                 (1 << LED_BLUE_BIT);
+
+    // Ensure all LEDs are off initially
+    greenOff();
+    redOff();
+    blueOff();
+
+    // Initialize random seed for light show
+    srand(time(NULL));
 }
 
 //======================================================================
@@ -66,8 +73,6 @@ void LEDInterface::blueOff() {
 // Description:   Make the LEDs do a random light show.
 //======================================================================
 void LEDInterface::lightShow() {
-    srand(time(NULL)); // Random seed generator
-
     for (int i = 0; i < 100; i++) { // Run the loop 100 times
         int action = rand() % 6;    // Random number between 0 and 5
         
