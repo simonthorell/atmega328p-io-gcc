@@ -13,7 +13,8 @@ class CommandParser {
 public:
     // Constructor
     CommandParser(LEDInterface &ledInterface,
-                  ButtonInterface& buttonInterface
+                  ButtonInterface& buttonInterface,
+                  POTInterface& potInterface
                  );
 
     // Public Methods
@@ -23,6 +24,7 @@ private:
     // Hardware Interface Objects
     LEDInterface& LED;
     ButtonInterface& BTN;
+    POTInterface& POT;
 
     // Private Methods
     void parseLedCommand(const char* command);

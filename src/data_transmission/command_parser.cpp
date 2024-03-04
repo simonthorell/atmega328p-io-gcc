@@ -6,8 +6,9 @@
 //======================================================================
 // Constructor
 //======================================================================
-CommandParser::CommandParser(LEDInterface& LED, ButtonInterface& BTN) 
-    : LED(LED), BTN(BTN) {
+CommandParser::CommandParser(LEDInterface& LED, ButtonInterface& BTN,
+                             POTInterface& POT) 
+    : LED(LED), BTN(BTN), POT(POT) {
 }
 
 //======================================================================

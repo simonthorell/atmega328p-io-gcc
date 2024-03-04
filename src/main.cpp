@@ -25,9 +25,10 @@ int main(void) {
     // Initialize Hardware
     LEDInterface LED;
     ButtonInterface BTN(LED);
+    POTInterface POT;
 
     // Initialize UART command parser
-    CommandParser commandParser(LED, BTN);
+    CommandParser commandParser(LED, BTN, POT);
 
     // Run the application loop
     loop(serial, commandParser);
