@@ -11,9 +11,12 @@
 //======================================================================
 ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
     // Set the button pins as input
-    DDRB &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | (1 << BUTTON_3_BIT));
+    DDRB &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
+              (1 << BUTTON_3_BIT));
+    
     // Enable pull-up resistors
-    PORTB |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | (1 << BUTTON_3_BIT);
+    PORTB |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
+             (1 << BUTTON_3_BIT);
 }
 
 //======================================================================
@@ -34,7 +37,8 @@ bool ButtonInterface::readButton3() {
 
 //======================================================================
 // Public Method: checkButtons
-// Description:   Checks the state of each button and debounces the input
+// Description:   Checks the state of each button and debounces the 
+//                input.
 //======================================================================
 void ButtonInterface::checkButtons() {
     static bool prevButton1State = false;
