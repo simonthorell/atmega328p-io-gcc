@@ -2,6 +2,7 @@
 // Potentiometer (POT) Interface Class Implementation
 //======================================================================
 #include "hardware_interfaces/pot_interface.h"
+#include "pin_map.h"
 
 //======================================================================
 // Constructor
@@ -13,17 +14,11 @@ POTInterface::POTInterface() {}
 // Description:   Read the value of the potentiometer
 //======================================================================
 int POTInterface::readValue() {
-    /* TODO: Should these registers be added in 'pin_map.h' or not? */
+    // Configure ADC with AVCC as reference voltage and set the potentiometer channel
+    CONFIGURE_ADC_FOR_CHANNEL(POTENTIOMETER_CHANNEL);
 
-    // Set the ADC multiplexer to the potentiometer channel
-    ADMUX = (1 << REFS0) | POTENTIOMETER_CHANNEL;
-
-    // Start the conversion
-    ADCSRA |= (1 << ADSC);
-
-    // Wait for the conversion to complete
-    while (ADCSRA & (1 << ADSC));
-
-    // Return the result
+    // Start the conversion, wait for completion, and return the result as previously shown
+    ADC_START_CONVERSION();
+    while (!ADC_IS_CONVERSION_COMPLETE());
     return ADC;
 }
