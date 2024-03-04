@@ -14,9 +14,9 @@
 #define BUTTONS_DDR     DDRB
 #define BUTTONS_PORT    PORTB
 #define BUTTONS_PIN     PINB
-#define BUTTON_1_BIT    PORTB1 // Arduino Pin 9
-#define BUTTON_2_BIT    PORTB2 // Arduino Pin 10
-#define BUTTON_3_BIT    PORTB3 // Arduino Pin 11
+#define BUTTON_1_BIT    PORTB1 // Arduino Digital Pin 9
+#define BUTTON_2_BIT    PORTB2 // Arduino Digital Pin 10
+#define BUTTON_3_BIT    PORTB3 // Arduino Digital Pin 11
 
 // PWM Output Pin
 #define PWM_OUTPUT_DDR  DDRD
