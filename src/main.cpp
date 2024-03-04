@@ -1,7 +1,7 @@
 // Main application file
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include "usart.h"
+#include "data_transmission/usart.h"
 
 void loop(USART &serial);
 
