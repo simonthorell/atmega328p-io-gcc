@@ -15,7 +15,7 @@ public:
     CommandParser(LEDInterface &ledInterface);
 
     // Public Methods
-    void parseCommand(const char* command);
+    uint8_t parseCommand(const char* command);
 
 private:
     // Hardware Interfaces

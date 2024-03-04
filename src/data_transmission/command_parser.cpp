@@ -13,25 +13,22 @@ CommandParser::CommandParser(LEDInterface& LED) : LED(LED) {}
 // Description:    Parses a command string received over UART and 
 //                 executes the corresponding command.
 //======================================================================
-void CommandParser::parseCommand(const char* command) {
-    // Check for "led" command
+uint8_t CommandParser::parseCommand(const char* command) {
     if (strncmp(command, "led", 3) == 0) {
         this->parseLedCommand(command);
     }
-    // Check for "button" command
     else if (strncmp(command, "button", 6) == 0) {
         this->parseButtonCommand(command);
     }
-    // Check for "potentiometer" command
     else if (strncmp(command, "potentiometer", 13) == 0) {
         this->parsePotentiometerCommand(command);
     }
-    // Check for "help" command
     else if (strncmp(command, "help", 4) == 0) {
         this->printHelp();
     }
-    // Unrecognized command
-    else {
+    else if (strncmp(command, "exit", 4) == 0) {
+        return 1;
+    } else {
         this->printError("Unrecognized command");
     }
 }

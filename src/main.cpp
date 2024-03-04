@@ -1,4 +1,6 @@
-// Main application file
+//======================================================================
+// Main Application
+//======================================================================
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "data_transmission/usart.h"
@@ -9,12 +11,15 @@
 
 void loop(USART &serial, CommandParser &commandParser);
 
+//======================================================================
+// Main Function (Setup)
+//======================================================================
 int main(void) {
     // Init USART with default baud rate
     USART serial;
     serial.init();
 
-    // Init LEDs
+    // Initialize Hardware Interfaces
     LEDInterface LED;
     LED.init();
 
@@ -27,6 +32,9 @@ int main(void) {
     return 0;
 }
 
+//======================================================================
+// Main Loop
+//======================================================================
 void loop(USART &serial, CommandParser &commandParser) {
     char receivedCommand[USART_CMD_BUFFER]; // command buffer
 
@@ -35,11 +43,12 @@ void loop(USART &serial, CommandParser &commandParser) {
         serial.receiveString(receivedCommand, USART_CMD_BUFFER);
         
         // Process the received command
-        commandParser.parseCommand(receivedCommand);
+        uint8_t parserStatus = commandParser.parseCommand(receivedCommand);
 
-        // Echo back the received string for testing
-        // serial.print("\r\nYou typed: ");
-        // serial.print(receivedCommand);
-        // serial.print("\r\n");
+        if (parserStatus == 1) {
+            serial.print("Exiting...\r\n");
+            break;
+        }
+
     }
 }
