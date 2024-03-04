@@ -11,12 +11,12 @@
 //======================================================================
 ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
     // Set the button pins as input
-    DDRB &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
-              (1 << BUTTON_3_BIT));
+    BUTTONS_DDR &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
+                     (1 << BUTTON_3_BIT));
     
     // Enable pull-up resistors
-    PORTB |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
-             (1 << BUTTON_3_BIT);
+    BUTTONS_PORT |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
+                    (1 << BUTTON_3_BIT);
 }
 
 //======================================================================
@@ -24,15 +24,15 @@ ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
 // Description:    Reads the state of each button
 //======================================================================
 bool ButtonInterface::readButton1() {
-    return !(PINB & (1 << BUTTON_1_BIT));
+    return !(BUTTONS_PIN & (1 << BUTTON_1_BIT));
 }
 
 bool ButtonInterface::readButton2() {
-    return !(PINB & (1 << BUTTON_2_BIT));
+    return !(BUTTONS_PIN & (1 << BUTTON_2_BIT));
 }
 
 bool ButtonInterface::readButton3() {
-    return !(PINB & (1 << BUTTON_3_BIT));
+    return !(BUTTONS_PIN & (1 << BUTTON_3_BIT));
 }
 
 //======================================================================
