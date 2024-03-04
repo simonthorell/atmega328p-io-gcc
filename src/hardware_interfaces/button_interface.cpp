@@ -51,7 +51,7 @@ void ButtonInterface::checkButtons() {
         if (readButton1() != prevButton1State) {
             prevButton1State = readButton1();
             if (prevButton1State) {
-                LED.greenToggle(); // Assuming a toggle method exists
+                LED.greenToggle();
             }
         }
     }
@@ -62,7 +62,7 @@ void ButtonInterface::checkButtons() {
         if (readButton2() != prevButton2State) {
             prevButton2State = readButton2();
             if (prevButton2State) {
-                LED.redToggle(); // Assuming a toggle method exists
+                LED.redToggle();
             }
         }
     }
@@ -73,7 +73,7 @@ void ButtonInterface::checkButtons() {
         if (readButton3() != prevButton3State) {
             prevButton3State = readButton3();
             if (prevButton3State) {
-                LED.blueToggle(); // Assuming a toggle method exists
+                LED.blueToggle();
             }
         }
     }

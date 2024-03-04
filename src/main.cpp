@@ -21,7 +21,7 @@ int main(void) {
 
     // Initialize Hardware Interfaces
     LEDInterface LED;
-    LED.init();
+    ButtonInterface button(LED);
 
     // Init USART command parser
     CommandParser commandParser(LED);
