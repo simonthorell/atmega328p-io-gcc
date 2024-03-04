@@ -7,6 +7,11 @@ class LEDInterface {
 public:
     // Initializes the LEDs
     void init();
+
+    // Functions to toggle the state of each LED
+    void greenToggle();
+    void redToggle();
+    void blueToggle();
     
     // Functions to control the state of each LED
     void greenOn();

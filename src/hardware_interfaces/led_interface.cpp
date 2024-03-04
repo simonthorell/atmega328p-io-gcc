@@ -17,6 +17,22 @@ void LEDInterface::init() {
 }
 
 //======================================================================
+// Public Method: greenToggle, redToggle, blueToggle
+// Description:   Toggle the state of the specified LED.
+//======================================================================
+void LEDInterface::greenToggle() {
+    LEDS_PORT ^= (1 << LED_GREEN_BIT);
+}
+
+void LEDInterface::redToggle() {
+    LEDS_PORT ^= (1 << LED_RED_BIT);
+}
+
+void LEDInterface::blueToggle() {
+    LEDS_PORT ^= (1 << LED_BLUE_BIT);
+}
+
+//======================================================================
 // Public Method: greenOn, greenOff, redOn, redOff, blueOn, blueOff
 // Description:   Turn on or off the specified LED
 //======================================================================
