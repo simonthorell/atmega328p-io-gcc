@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-// Hardware Abstraction Layers
+// Hardware Abstraction Layers (Interfaces)
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/pot_interface.h"
@@ -12,14 +12,17 @@
 class CommandParser {
 public:
     // Constructor
-    CommandParser(LEDInterface &ledInterface);
+    CommandParser(LEDInterface &ledInterface,
+                  ButtonInterface& buttonInterface
+                 );
 
     // Public Methods
-    uint8_t parseCommand(const char* command);
+    void parseCommand(const char* command);
 
 private:
-    // Hardware Interfaces
+    // Hardware Interface Objects
     LEDInterface& LED;
+    ButtonInterface& BTN;
 
     // Private Methods
     void parseLedCommand(const char* command);

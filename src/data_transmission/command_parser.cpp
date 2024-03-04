@@ -6,14 +6,16 @@
 //======================================================================
 // Constructor
 //======================================================================
-CommandParser::CommandParser(LEDInterface& LED) : LED(LED) {}
+CommandParser::CommandParser(LEDInterface& LED, ButtonInterface& BTN) 
+    : LED(LED), BTN(BTN) {
+}
 
 //======================================================================
 // Public Methods: parseCommand
 // Description:    Parses a command string received over UART and 
 //                 executes the corresponding command.
 //======================================================================
-uint8_t CommandParser::parseCommand(const char* command) {
+void CommandParser::parseCommand(const char* command) {
     if (strncmp(command, "led", 3) == 0) {
         this->parseLedCommand(command);
     }
@@ -25,9 +27,6 @@ uint8_t CommandParser::parseCommand(const char* command) {
     }
     else if (strncmp(command, "help", 4) == 0) {
         this->printHelp();
-    }
-    else if (strncmp(command, "exit", 4) == 0) {
-        return 1;
     } else {
         this->printError("Unrecognized command");
     }
