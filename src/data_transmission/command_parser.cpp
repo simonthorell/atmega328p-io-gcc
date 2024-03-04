@@ -1,21 +1,18 @@
-//=============================================================================
-// Class: Command Parser
-// Description: Parses and executes commands from the serial monitor and
-//              prints help and error messages.
-//=============================================================================
+//======================================================================
+// Command Parser Class Implementation
+//======================================================================
 #include "data_transmission/command_parser.h"
 
-//=============================================================================
+//======================================================================
 // Constructor
-//=============================================================================
-CommandParser::CommandParser(LEDInterface& LED) : LED(LED) {
-    /* Empty Constructor for now */
-}
+//======================================================================
+CommandParser::CommandParser(LEDInterface& LED) : LED(LED) {}
 
-//=============================================================================
+//======================================================================
 // Public Methods: parseCommand
-// Description: Parses a command string and executes the corresponding command
-//=============================================================================
+// Description:    Parses a command string received over UART and 
+//                 executes the corresponding command.
+//======================================================================
 void CommandParser::parseCommand(const char* command) {
     // Check for "led" command
     if (strncmp(command, "led", 3) == 0) {
@@ -39,10 +36,11 @@ void CommandParser::parseCommand(const char* command) {
     }
 }
 
-//=============================================================================
-// Private Methods: parseLedCommand, parseButtonCommand, parsePotentiometerCommand
-// Description: Parses and executes the corresponding command
-//=============================================================================
+//======================================================================
+// Private Methods: parseLedCommand, parseButtonCommand, 
+//                  parsePotentiometerCommand
+// Description:     Parses and executes the corresponding UART-command.
+//======================================================================
 void CommandParser::parseLedCommand(const char* command) {
     if (strcmp(command, "led green on") == 0) {
         LED.greenOn();
@@ -56,6 +54,8 @@ void CommandParser::parseLedCommand(const char* command) {
         LED.blueOn();
     } else if (strcmp(command, "led blue off") == 0) {
         LED.blueOff();
+    } else if (strcmp(command, "led lightshow") == 0) {
+        LED.lightShow();
     }
 }
 
@@ -69,10 +69,10 @@ void CommandParser::parsePotentiometerCommand(const char* command) {
     (void)command;
 }
 
-//=============================================================================
+//======================================================================
 // Private Methods: printHelp, printError
-// Description: Prints a help message or an error message
-//=============================================================================
+// Description:     Prints a help message or an error message over UART.
+//======================================================================
 void CommandParser::printHelp() {
     /* TODO: Implement... */
 }

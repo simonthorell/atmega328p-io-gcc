@@ -1,6 +1,8 @@
 #ifndef LED_INTERFACE_H
 #define LED_INTERFACE_H
 
+#include "pin_map.h" // LED pin definitions
+
 class LEDInterface {
 public:
     // Initializes the LEDs
@@ -14,7 +16,8 @@ public:
     void blueOn();
     void blueOff();
 
-    // TODO: Methods to make "light show"
+    // Functions to make the LEDs do a random "light show"
+    void lightShow();
 };
 
 #endif // LED_INTERFACE_H
