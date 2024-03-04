@@ -1,7 +1,7 @@
 #ifndef LED_INTERFACE_H
 #define LED_INTERFACE_H
 
-#include "pin_map.h" // LED pin definitions
+#include "mcu_mapping.h" // LED pin definitions
 
 class LEDInterface {
 public:

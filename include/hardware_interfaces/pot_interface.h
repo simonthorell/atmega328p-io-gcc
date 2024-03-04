@@ -1,7 +1,7 @@
 #ifndef POT_INTERFACE_H
 #define POT_INTERFACE_H
 
-#include "pin_map.h" // Include pin mapping
+#include "mcu_mapping.h" // Include pin mapping
 
 class POTInterface {
 public:

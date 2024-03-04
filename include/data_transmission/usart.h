@@ -2,11 +2,7 @@
 #define USART_H
 
 #include <avr/io.h>
-
-#define F_CPU 16000000UL         // CPU frequency in Hz
-#define BAUD 9600                // USART baud rate
-#define MY_UBRR F_CPU/16/BAUD-1  // UBRR value for 9600 baud rate
-#define USART_CMD_BUFFER 32      // USART command buffer size
+#include "mcu_mapping.h"
 
 class USART {
 public:

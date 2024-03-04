@@ -2,7 +2,7 @@
 #define BUTTON_INTERFACE_H
 
 #include <avr/io.h>  // AVR register definitions
-#include "pin_map.h" // Button pin definitions
+#include "mcu_mapping.h" // Button pin definitions
 
 // LED interface for controlling LEDs
 #include "hardware_interfaces/led_interface.h"
