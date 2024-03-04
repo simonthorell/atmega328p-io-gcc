@@ -4,15 +4,11 @@
 //              prints help and error messages.
 //=============================================================================
 #include "data_transmission/command_parser.h"
-// Hardware Abstraction Layers
-#include "hardware_interfaces/leds.h"
-#include "hardware_interfaces/buttons.h"
-#include "hardware_interfaces/potentiometers.h"
 
 //=============================================================================
 // Constructor
 //=============================================================================
-CommandParser::CommandParser() {
+CommandParser::CommandParser(LEDInterface& LED) : LED(LED) {
     /* Empty Constructor for now */
 }
 
@@ -48,15 +44,29 @@ void CommandParser::parseCommand(const char* command) {
 // Description: Parses and executes the corresponding command
 //=============================================================================
 void CommandParser::parseLedCommand(const char* command) {
-    /* TODO: Implement... */
+    if (strcmp(command, "led green on") == 0) {
+        LED.greenOn();
+    } else if (strcmp(command, "led green off") == 0) {
+        LED.greenOff();
+    } else if (strcmp(command, "led red on") == 0) {
+        LED.redOn();
+    } else if (strcmp(command, "led red off") == 0) {
+        LED.redOff();
+    } else if (strcmp(command, "led blue on") == 0) {
+        LED.blueOn();
+    } else if (strcmp(command, "led blue off") == 0) {
+        LED.blueOff();
+    }
 }
 
 void CommandParser::parseButtonCommand(const char* command) {
     /* TODO: Implement... */
+    (void)command;
 }
 
 void CommandParser::parsePotentiometerCommand(const char* command) {
     /* TODO: Implement... */
+    (void)command;
 }
 
 //=============================================================================
@@ -69,4 +79,5 @@ void CommandParser::printHelp() {
 
 void CommandParser::printError(const char* message) {
     /* TODO: Implement... */
+    (void)message; 
 }

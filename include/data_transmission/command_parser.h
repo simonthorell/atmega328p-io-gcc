@@ -4,28 +4,28 @@
 #include <stdint.h>
 #include <string.h>
 
+// Hardware Abstraction Layers
+#include "hardware_interfaces/led_interface.h"
+#include "hardware_interfaces/button_interface.h"
+#include "hardware_interfaces/pot_interface.h"
+
 class CommandParser {
 public:
     // Constructor
-    CommandParser();
+    CommandParser(LEDInterface &ledInterface);
 
-    // Parses a command string and executes the corresponding command
+    // Public Methods
     void parseCommand(const char* command);
 
 private:
-    // Parses and executes an "led" command
+    // Hardware Interfaces
+    LEDInterface& LED;
+
+    // Private Methods
     void parseLedCommand(const char* command);
-
-    // Parses and executes a "button" command
     void parseButtonCommand(const char* command);
-
-    // Parses and executes a "potentiometer" command
     void parsePotentiometerCommand(const char* command);
-
-    // Prints a help message
     void printHelp();
-
-    // Prints an error message
     void printError(const char* message);
 };
 

@@ -1,0 +1,4 @@
+#ifndef BUTTON_INTERFACE_H
+#define BUTTON_INTERFACE_H
+
+#endif // BUTTON_INTERFACE_H

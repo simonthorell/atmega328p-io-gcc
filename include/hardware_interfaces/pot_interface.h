@@ -1,0 +1,4 @@
+#ifndef POT_INTERFACE_H
+#define POT_INTERFACE_H
+
+#endif // POT_INTERFACE_H

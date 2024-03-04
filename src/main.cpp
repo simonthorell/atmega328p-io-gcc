@@ -1,9 +1,11 @@
 // Main application file
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-// USART Interface & Command Parser
 #include "data_transmission/usart.h"
 #include "data_transmission/command_parser.h"
+#include "hardware_interfaces/led_interface.h"
+#include "hardware_interfaces/button_interface.h"
+#include "hardware_interfaces/pot_interface.h"
 
 void loop(USART &serial, CommandParser &commandParser);
 
@@ -12,8 +14,12 @@ int main(void) {
     USART serial;
     serial.init();
 
+    // Init LEDs
+    LEDInterface LED;
+    LED.init();
+
     // Init USART command parser
-    CommandParser commandParser;
+    CommandParser commandParser(LED);
 
     // Run the app loop
     loop(serial, commandParser);
