@@ -5,33 +5,31 @@
 #include <avr/interrupt.h> // AVR Interrupts
 #include <avr/pgmspace.h>  // AVR Program Space Utilities
 
+// Include Application Header-files
 #include "data_transmission/usart.h"
 #include "data_transmission/command_parser.h"
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/pot_interface.h"
 
+// Function Prototypes
 void loop(USART &serial, CommandParser &commandParser);
 
 //======================================================================
 // Main Function (Setup)
 //======================================================================
 int main(void) {
-    // Enable Global Interrupts
-    sei();
+    sei();          // Enable Global Interrupts
+    USART serial;   // Init USART (UART only) with default baud rate
 
-    // Init USART with default baud rate
-    USART serial;
-    serial.init();
-
-    // Initialize Hardware Interfaces
+    // Initialize Hardware
     LEDInterface LED;
     ButtonInterface BTN(LED);
 
-    // Init USART command parser
+    // Initialize UART command parser
     CommandParser commandParser(LED, BTN);
 
-    // Run the app loop
+    // Run the application loop
     loop(serial, commandParser);
     
     return 0;

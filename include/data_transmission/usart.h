@@ -10,8 +10,10 @@
 
 class USART {
 public:
-    USART();
-    void init(unsigned int ubrr = MY_UBRR);
+    // Constructor
+    USART(unsigned int ubrr = MY_UBRR);
+
+    // Public Methods
     void transmit(unsigned char data);
     unsigned char receive();
     void print(const char* str);
