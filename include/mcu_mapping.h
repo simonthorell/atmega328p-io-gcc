@@ -34,6 +34,8 @@
 #define BUTTON_1_BIT    PORTB1  // Arduino Digital Pin 9
 #define BUTTON_2_BIT    PORTB2  // Arduino Digital Pin 10
 #define BUTTON_3_BIT    PORTB3  // Arduino Digital Pin 11
+// Button Interrupt definitions
+#define BUTTON_ISR_VECT PCINT1_vect // Pin change interrupt vector (D8-D13)
 
 //======================================================================
 // ADC Configuration

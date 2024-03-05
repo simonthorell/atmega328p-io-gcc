@@ -2,14 +2,32 @@
 // Buttons Interface Class Implementation
 //======================================================================
 #include "hardware_interfaces/button_interface.h"
-#include <util/delay.h>  // For debouncing
 
-#define DEBOUNCE_DELAY 80 // Debounce delay in milliseconds
+// TODO: Improve ISR for button interface
+static ButtonInterface* buttonInterfaceInstance = nullptr;
+
+bool ButtonInterface::prevButton1State = false;
+bool ButtonInterface::prevButton2State = false;
+bool ButtonInterface::prevButton3State = false;
+
+ISR(BUTTON_ISR_VECT) {
+    if (buttonInterfaceInstance != nullptr) {
+        buttonInterfaceInstance->checkButtons();
+    }
+}
+//**********************************************************************
 
 //======================================================================
 // Constructor
 //======================================================================
 ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
+    buttonInterfaceInstance = this; // Set the static or global instance pointer
+
+    // Turn off the LEDs
+    LED.greenOff();
+    LED.redOff();
+    LED.blueOff();
+
     // Set the button pins as input
     BUTTONS_DDR &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
                      (1 << BUTTON_3_BIT));
@@ -17,6 +35,12 @@ ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
     // Enable pull-up resistors
     BUTTONS_PORT |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
                     (1 << BUTTON_3_BIT);
+
+    // Enable pin change interrupt for PCINT1 group (PB1 to PB3)
+    PCICR |= (1 << PCIE1);
+    PCMSK1 |= (1 << PCINT9) | (1 << PCINT10) | (1 << PCINT11);
+
+    /* Note: Global Interupts 'sei()' are enabled in main.cpp */
 }
 
 //======================================================================
@@ -41,40 +65,27 @@ bool ButtonInterface::readButton3() {
 //                input.
 //======================================================================
 void ButtonInterface::checkButtons() {
-    static bool prevButton1State = false;
-    static bool prevButton2State = false;
-    static bool prevButton3State = false;
-
-    // Check and debounce button 1
-    if (readButton1() != prevButton1State) {
-        _delay_ms(DEBOUNCE_DELAY);
-        if (readButton1() != prevButton1State) {
-            prevButton1State = readButton1();
-            if (prevButton1State) {
-                LED.greenToggle();
-            }
+    bool currentButton1State = readButton1();
+    if (currentButton1State != prevButton1State) {
+        prevButton1State = currentButton1State;
+        if (prevButton1State) {
+            LED.greenToggle();
         }
     }
 
-    // Check and debounce button 2
-    if (readButton2() != prevButton2State) {
-        _delay_ms(DEBOUNCE_DELAY);
-        if (readButton2() != prevButton2State) {
-            prevButton2State = readButton2();
-            if (prevButton2State) {
-                LED.redToggle();
-            }
+    bool currentButton2State = readButton2();
+    if (currentButton2State != prevButton2State) {
+        prevButton2State = currentButton2State;
+        if (prevButton2State) {
+            LED.redToggle();
         }
     }
 
-    // Check and debounce button 3
-    if (readButton3() != prevButton3State) {
-        _delay_ms(DEBOUNCE_DELAY);
-        if (readButton3() != prevButton3State) {
-            prevButton3State = readButton3();
-            if (prevButton3State) {
-                LED.blueToggle();
-            }
+    bool currentButton3State = readButton3();
+    if (currentButton3State != prevButton3State) {
+        prevButton3State = currentButton3State;
+        if (prevButton3State) {
+            LED.blueToggle();
         }
     }
 }

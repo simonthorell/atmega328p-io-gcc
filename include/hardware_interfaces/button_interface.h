@@ -1,8 +1,9 @@
 #ifndef BUTTON_INTERFACE_H
 #define BUTTON_INTERFACE_H
 
-#include <avr/io.h>  // AVR register definitions
-#include "mcu_mapping.h" // Button pin definitions
+#include <avr/io.h>        // AVR register definitions
+#include <avr/interrupt.h> // AVR interrupt definitions
+#include "mcu_mapping.h"   // Button pin definitions
 
 // LED interface for controlling LEDs
 #include "hardware_interfaces/led_interface.h"
@@ -20,6 +21,10 @@ private:
     bool readButton1();
     bool readButton2();
     bool readButton3();
+
+    static bool prevButton1State;
+    static bool prevButton2State;
+    static bool prevButton3State;
 };
 
 #endif // BUTTON_INTERFACE_H
