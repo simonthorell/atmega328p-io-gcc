@@ -33,9 +33,9 @@ ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface)
     BUTTONS_PORT |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
                     (1 << BUTTON_3_BIT);
 
-    // Enable pin change interrupt for PCINT1 group (PB1 to PB3)
-    PCICR |= (1 << PCIE1);
-    PCMSK1 |= (1 << PCINT9) | (1 << PCINT10) | (1 << PCINT11);
+    // Enable pin change interrupt for PCINT0 Group (D8-D13)
+    PCICR |= (1 << PCIE0);
+    PCMSK0 |= (1 << PCINT1) | (1 << PCINT2) | (1 << PCINT3);
 
     /* Note: Global Interupts 'sei()' are enabled in main.cpp */
 
