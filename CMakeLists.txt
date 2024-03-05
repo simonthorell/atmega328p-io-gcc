@@ -30,7 +30,7 @@ set(CMAKE_EXE_LINKER_FLAGS "-mmcu=${MCU}")
 add_compile_options(
     -mmcu=${MCU} # specify MCU model
     -Os          # optimize size
-    -std=c++11   # C++ standard
+    -std=c++17   # C++ standard
     -Wall        # enable warnings
     -Wextra
     -Wundef
