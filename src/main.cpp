@@ -9,7 +9,7 @@
 #include "data_transmission/command_parser.h"
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
-#include "hardware_interfaces/pot_interface.h"
+#include "hardware_interfaces/adc_interface.h"
 
 // Function Prototypes
 void loop(USART &serial, CommandParser &commandParser);
@@ -22,12 +22,12 @@ int main(void) {
     USART serial;  // Init UART with default baud rate
 
     // Initialize Hardware
-    LEDInterface     LED;
-    ButtonInterface  BTN(LED);
-    POTInterface     POT;
+    LEDInterface     led;
+    ButtonInterface  button(led);
+    ADCInterface     adcInterface;
 
     // Initialize UART command parser
-    CommandParser commandParser(LED, BTN, POT);
+    CommandParser commandParser(serial, led, button, adcInterface);
 
     // Run the application loop
     loop(serial, commandParser);

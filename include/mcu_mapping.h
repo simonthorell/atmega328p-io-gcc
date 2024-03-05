@@ -37,26 +37,7 @@
 // Button Interrupt definitions
 #define BUTTON_ISR_VECT PCINT1_vect // Pin change interrupt vector (D8-D13)
 
-//======================================================================
-// ADC Configuration
-//======================================================================
-
-// ADC Start Conversion
-#define ADC_START_CONVERSION() (ADCSRA |= (1 << ADSC))
-
-// Check if ADC Conversion is Complete
-#define ADC_IS_CONVERSION_COMPLETE() (!(ADCSRA & (1 << ADSC)))
-
-// ADC Reference Voltage Configuration
-#define ADC_REF_VOLTAGE_AVCC (1 << REFS0)
-
-// ADC Prescaler (128) Configuration 
-#define ADC_PRESCALER_128 ((1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0))
-
 // Potentiometer ADC Channel
-#define POTENTIOMETER_CHANNEL 0 // Arduino Analog Pin ADC0
-
-// Convenient Macro for Configuring ADC with Reference Voltage and Channel
-#define CONFIGURE_ADC_FOR_CHANNEL(channel) (ADMUX = ADC_REF_VOLTAGE_AVCC | (channel))
+#define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
 
 #endif // MCU_MAPPING_H

@@ -2,6 +2,7 @@
 // Buttons Interface Class Implementation
 //======================================================================
 #include "hardware_interfaces/button_interface.h"
+#include <util/delay.h>
 
 // TODO: Improve ISR for button interface
 static ButtonInterface* buttonInterfaceInstance = nullptr;
@@ -10,23 +11,19 @@ bool ButtonInterface::prevButton1State = false;
 bool ButtonInterface::prevButton2State = false;
 bool ButtonInterface::prevButton3State = false;
 
+#define BUTTON_DEBOUNCE_DELAY 80 // ms
+
 ISR(BUTTON_ISR_VECT) {
     if (buttonInterfaceInstance != nullptr) {
         buttonInterfaceInstance->checkButtons();
     }
 }
-//**********************************************************************
 
 //======================================================================
 // Constructor
 //======================================================================
-ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
+ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface) {
     buttonInterfaceInstance = this; // Set the static or global instance pointer
-
-    // Turn off the LEDs
-    LED.greenOff();
-    LED.redOff();
-    LED.blueOff();
 
     // Set the button pins as input
     BUTTONS_DDR &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
@@ -41,6 +38,11 @@ ButtonInterface::ButtonInterface(LEDInterface& LED) : LED(LED) {
     PCMSK1 |= (1 << PCINT9) | (1 << PCINT10) | (1 << PCINT11);
 
     /* Note: Global Interupts 'sei()' are enabled in main.cpp */
+
+    // Turn off the LEDs
+    LED.greenOff();
+    LED.redOff();
+    LED.blueOff();
 }
 
 //======================================================================
@@ -65,6 +67,8 @@ bool ButtonInterface::readButton3() {
 //                input.
 //======================================================================
 void ButtonInterface::checkButtons() {
+    _delay_ms(BUTTON_DEBOUNCE_DELAY);
+
     bool currentButton1State = readButton1();
     if (currentButton1State != prevButton1State) {
         prevButton1State = currentButton1State;

@@ -4,27 +4,32 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "data_transmission/usart.h"
+
 // Hardware Abstraction Layers (Interfaces)
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
-#include "hardware_interfaces/pot_interface.h"
+#include "hardware_interfaces/adc_interface.h"
 
 class CommandParser {
 public:
     // Constructor
-    CommandParser(LEDInterface &ledInterface,
+    CommandParser(USART &serial,
+                  LEDInterface &ledInterface,
                   ButtonInterface& buttonInterface,
-                  POTInterface& potInterface
+                  ADCInterface& adcInterface
                  );
 
     // Public Methods
     void parseCommand(const char* command);
 
 private:
+    // USART Interface Object
+    USART& serial;
     // Hardware Interface Objects
-    LEDInterface& LED;
-    ButtonInterface& BTN;
-    POTInterface& POT;
+    LEDInterface& led;
+    ButtonInterface& button;
+    ADCInterface& adcInterface;
 
     // Private Methods
     void parseLedCommand(const char* command);
