@@ -30,6 +30,9 @@ void CommandParser::parseCommand(const char* command) {
     else if (strncmp(command, "adc", 3) == 0) {
         this->parsePotentiometerCommand(command);
     }
+    else if (strncmp(command, "pwm", 3) == 0) {
+        this->parsePwmCommand(command);
+    }
     else if (strncmp(command, "help", 4) == 0) {
         this->printHelp();
     } else {
@@ -57,6 +60,47 @@ void CommandParser::parseLedCommand(const char* command) {
         led.blueOff();
     } else if (strcmp(command, "led lightshow") == 0) {
         led.lightShow();
+    }
+}
+
+void CommandParser::parsePwmCommand(const char* command) {
+    PWMInterface pwm;
+
+    if (strcmp(command, "pwm led pot") == 0) {
+       // Continuously adjust LED brightness based on potentiometer value
+        while (1) {
+            // Assuming adcInterface is an instance of AdcInterface and properly initialized
+            uint16_t adcValue = adcInterface.Read(POT_ADC_CHANNEL);
+            // Map ADC value (0-1023) to duty cycle (0-255)
+            uint8_t dutyCycle = static_cast<uint8_t>(map(adcValue, 0, 1023, 0, 255));
+
+            // Set PWM duty cycle according to ADC value
+            pwm.setDutyCycle(dutyCycle);
+
+            _delay_ms(30); // Short delay to debounce/read rate control
+
+            if (adcValue == 0) {
+                led.greenOff(); // Turn off LED
+                break;          // Exit the loop when pot is turned to 0
+            }
+        }
+    }
+
+    if (strncmp(command, "pwm led ", 8) == 0) {
+        // Extract the brightness level from the command
+        int level = command[8] - '0'; // Convert the character to an integer
+
+        // Check if the level is within the valid range
+        if (level >= 0 && level <= 10) {
+            // Map the level from 0-10 scale to 0-255 scale for PWM
+            uint8_t dutyCycle = static_cast<uint8_t>(map(level, 0, 10, 0, 255));
+
+            // Set the LED brightness
+            pwm.setDutyCycle(dutyCycle);
+        } else {
+            // Invalid level
+            return;
+        }
     }
 }
 

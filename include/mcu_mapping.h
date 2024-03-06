@@ -15,11 +15,6 @@
 // PIN Definitions
 //======================================================================
 
-// PWM Output Pin
-#define PWM_OUTPUT_DDR  DDRD
-#define PWM_OUTPUT_PORT PORTD
-#define PWM_OUTPUT_BIT  PORTD3  // Arduino Digital Pin 3
-
 // DDR and PORT Definitions for LEDs (All on PORTD)
 #define LEDS_DDR        DDRD
 #define LEDS_PORT       PORTD
@@ -40,5 +35,38 @@
 
 // Potentiometer ADC Channel
 #define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
+
+//======================================================================
+// PWM Definitions
+//======================================================================
+
+/* TODO: Using PWM on same pin as led on/off etc causes interference */
+
+// Define which pin is used for PWM to map correct registers
+#define USING_PWM_PIN_5
+
+#ifdef USING_PWM_PIN_3
+    // Definitions for PWM on Pin 3 using Timer 2
+    #define PWM_OUTPUT_DDR   DDRD
+    #define PWM_OUTPUT_BIT   PORTD3
+    #define PWM_OUTPUT_OC    OCR2B
+    #define PWM_TCCRA        TCCR2A
+    #define PWM_TCCRB        TCCR2B
+    #define PWM_COMx1        COM2B1
+    #define PWM_WGMx0        WGM20
+    #define PWM_WGMx1        WGM21
+    #define PWM_CSx1         CS21
+#elif defined(USING_PWM_PIN_5)
+    // Definitions for PWM on Pin 5 using Timer 0
+    #define PWM_OUTPUT_DDR   DDRD
+    #define PWM_OUTPUT_BIT   PORTD5
+    #define PWM_OUTPUT_OC    OCR0B
+    #define PWM_TCCRA        TCCR0A
+    #define PWM_TCCRB        TCCR0B
+    #define PWM_COMx1        COM0B1
+    #define PWM_WGMx0        WGM00
+    #define PWM_WGMx1        WGM01
+    #define PWM_CSx1         CS01
+#endif
 
 #endif // MCU_MAPPING_H
