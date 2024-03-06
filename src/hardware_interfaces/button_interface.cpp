@@ -13,6 +13,7 @@ bool ButtonInterface::prevButton3State = false;
 
 #define BUTTON_DEBOUNCE_DELAY 80 // ms
 
+// TODO: Replace with timer interrupt and buttonDebounce method
 ISR(BUTTON_ISR_VECT) {
     if (buttonInterfaceInstance != nullptr) {
         buttonInterfaceInstance->checkButtons();
@@ -46,7 +47,21 @@ ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface)
 }
 
 //======================================================================
-// Public Methods: readButton1, readButton2, readButton3
+// Public Method: buttonPress
+// Description:   Returns the state of the button
+//======================================================================
+ButtonStatus ButtonInterface::buttonDebounce(unsigned char btn) {
+    // Set button press stable when 5 consecutive reads are the same
+    unsigned char bitMask = 0b00011111;
+
+    // Check the state of the button and return button status
+    if((btn & bitMask) == bitMask) return BUTTON_PRESSED;  // 5 last = 1
+    if((btn & bitMask) == 0)       return BUTTON_RELEASED; // 5 last = 0
+    return  BUTTON_UNKOWN; // Else, return 'unknown state'.
+}
+
+//======================================================================
+// Private Methods: readButton1, readButton2, readButton3
 // Description:    Reads the state of each button
 //======================================================================
 bool ButtonInterface::readButton1() {
