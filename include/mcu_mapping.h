@@ -64,7 +64,7 @@ typedef enum {
     #define PWM_WGMx0        WGM20
     #define PWM_WGMx1        WGM21
     #define PWM_CSx1         CS21
-// Example for 16-bit Timer 1 using Pin D5
+// Example for 16-bit Timer 0 using Pin D5
 #elif defined(USING_PWM_PIN_5) 
     #define PWM_OUTPUT_DDR   DDRD
     #define PWM_OUTPUT_BIT   PORTD5
