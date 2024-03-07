@@ -4,7 +4,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "data_transmission/usart.h"
+// Data in PROGMEM
+#include "data.h"
+
+// Data Transmission Interfaces
+#include "data_transmission/usart.h" // Serial Communication
 
 // Hardware Abstraction Layers (Interfaces)
 #include "hardware_interfaces/led_interface.h"
@@ -28,6 +32,7 @@ public:
 private:
     // USART Interface Object
     USART& serial;
+
     // Hardware Interface Objects
     LEDInterface& led;
     ButtonInterface& button;

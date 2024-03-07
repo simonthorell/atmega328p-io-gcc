@@ -18,9 +18,7 @@ CommandParser::CommandParser(USART& serial, LEDInterface& led,
       button(button), 
       adcInterface(adcInterface), 
       pwmInterface(pwmInterface) 
-{
-    // Empty constructor for now
-}
+{}
 
 //==============================================================================
 // Public Methods: parseCommand
@@ -198,21 +196,8 @@ void CommandParser::parsePotentiometerCommand(const char* command) {
 // Description:     Prints a help message or an error message over UART.
 //==============================================================================
 void CommandParser::printHelp() {
-    serial.print("  Available commands:\n");
-    serial.print("  - led green on\n");
-    serial.print("  - led green off\n");
-    serial.print("  - led red on\n");
-    serial.print("  - led red off\n");
-    serial.print("  - led blue on\n");
-    serial.print("  - led blue off\n");
-    serial.print("  - led lightshow (random LED on/off sequence)\n");
-    serial.print("  - button timer interupt\n");
-    serial.print("  - button pci interupt\n");
-    serial.print("  - button state (Print bitmapping of 30 button presses/bounces)\n");
-    serial.print("  - adc read pot (Cancel by turning pot to 0)\n");
-    serial.print("  - pwm led pot (Cancel by turning pot to 0)\n");
-    serial.print("  - pwm led [0-10] (Example: 'pwm led 5' = 50% brightness)\n");
-    serial.print("  - help\n");
+    Data data(serial);
+    data.printCommands();
 }
 
 void CommandParser::printError(const char* message) {
