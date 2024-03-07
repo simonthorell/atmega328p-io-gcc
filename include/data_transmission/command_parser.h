@@ -18,7 +18,8 @@ public:
     CommandParser(USART &serial,
                   LEDInterface &ledInterface,
                   ButtonInterface& buttonInterface,
-                  ADCInterface& adcInterface
+                  ADCInterface& adcInterface,
+                  PWMInterface& pwmInterface
                  );
 
     // Public Methods
@@ -31,6 +32,7 @@ private:
     LEDInterface& led;
     ButtonInterface& button;
     ADCInterface& adcInterface;
+    PWMInterface& pwmInterface;
 
     // Private Methods
     void parseLedCommand(const char* command);

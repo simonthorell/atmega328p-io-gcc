@@ -4,6 +4,7 @@
 // Constructor
 PWMInterface::PWMInterface() {
     this->init();
+    setDutyCycle(255); // Max duty cycle
 }
 
 void PWMInterface::init() {

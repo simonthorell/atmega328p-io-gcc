@@ -51,7 +51,7 @@ typedef enum {
 /* TODO: Using PWM on same pin as led on/off etc causes interference */
 
 // Define which pin is used for PWM to map correct registers
-#define USING_PWM_PIN_5
+#define USING_PWM_PIN_3
 
 #ifdef USING_PWM_PIN_3
     // Definitions for PWM on Pin 3 using Timer 2

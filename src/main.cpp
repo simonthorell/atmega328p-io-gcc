@@ -10,6 +10,7 @@
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
+#include "hardware_interfaces/pwm_interface.h"
 
 // Function Prototypes
 void loop(USART &serial, CommandParser &commandParser);
@@ -29,9 +30,12 @@ int main(void) {
     LEDInterface     led;
     ButtonInterface  button(led);
     ADCInterface     adcInterface;
+    PWMInterface     pwmInterface;
 
     // Initialize UART command parser
-    CommandParser commandParser(serial, led, button, adcInterface);
+    CommandParser commandParser(serial, led, button, adcInterface, 
+                                pwmInterface
+                               );
 
     // Run the application loop
     loop(serial, commandParser);

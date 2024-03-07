@@ -11,8 +11,10 @@
 // Constructor
 //======================================================================
 CommandParser::CommandParser(USART& serial, LEDInterface& led, 
-                             ButtonInterface& button, ADCInterface& adcInterface) 
-    : serial(serial), led(led), button(button), adcInterface(adcInterface) {
+                             ButtonInterface& button, ADCInterface& adcInterface,
+                             PWMInterface& pwmInterface) 
+    : serial(serial), led(led), button(button), adcInterface(adcInterface), 
+      pwmInterface(pwmInterface) {
 }
 
 //======================================================================
@@ -64,7 +66,7 @@ void CommandParser::parseLedCommand(const char* command) {
 }
 
 void CommandParser::parsePwmCommand(const char* command) {
-    PWMInterface pwm;
+    // PWMInterface pwm;
 
     if (strcmp(command, "pwm led pot") == 0) {
        // Continuously adjust LED brightness based on potentiometer value
@@ -75,31 +77,32 @@ void CommandParser::parsePwmCommand(const char* command) {
             uint8_t dutyCycle = static_cast<uint8_t>(map(adcValue, 0, 1023, 0, 255));
 
             // Set PWM duty cycle according to ADC value
-            pwm.setDutyCycle(dutyCycle);
+            pwmInterface.setDutyCycle(dutyCycle);
 
             _delay_ms(30); // Short delay to debounce/read rate control
 
             if (adcValue == 0) {
-                led.greenOff(); // Turn off LED
-                break;          // Exit the loop when pot is turned to 0
+                break; // Exit the loop when pot is turned to 0
             }
         }
     }
 
     if (strncmp(command, "pwm led ", 8) == 0) {
-        // Extract the brightness level from the command
-        int level = command[8] - '0'; // Convert the character to an integer
+        int level; // Extract the brightness level from the command
+        // Using sscanf to convert the substring following "pwm led " into an integer
+        if (sscanf(command + 8, "%d", &level) == 1) { // Ensure the conversion succeeds
 
-        // Check if the level is within the valid range
-        if (level >= 0 && level <= 10) {
-            // Map the level from 0-10 scale to 0-255 scale for PWM
-            uint8_t dutyCycle = static_cast<uint8_t>(map(level, 0, 10, 0, 255));
+            // Check if the level is within the valid range
+            if (level >= 0 && level <= 10) {
+                uint8_t dutyCycle = static_cast<uint8_t>(map(level, 0, 10, 0, 255));
 
-            // Set the LED brightness
-            pwm.setDutyCycle(dutyCycle);
+                // Set the LED brightness
+                pwmInterface.setDutyCycle(dutyCycle);
+            } else {
+                return; // Invalid level
+            }
         } else {
-            // Invalid level
-            return;
+            return; // Parsing error
         }
     }
 }
