@@ -2,26 +2,36 @@
 // Buttons Interface Class Implementation
 //======================================================================
 #include "hardware_interfaces/button_interface.h"
-#include <util/delay.h>
 
-#define BUTTON_DEBOUNCE_MASK 0b00011111 // 5 consecutive reads = press
+#define TIMER_DEBOUNCE_BITMASK 0b00011111 // 5 consecutive reads = press
+#define PCI_DEBOUNCE_BITMASK   0b00000001 // only need high/low = press
 
 const unsigned char ButtonInterface::buttonBits[BUTTONS_COUNT] = {
     BUTTON_1_BIT, BUTTON_2_BIT, BUTTON_3_BIT // Mapped in mcu_mapping.h
 };
 
-// Variable to hold 8-bit state of all buttons (count defined in mcu_mapping.h)
+// Variable to hold 8-bit state of all buttons
 volatile unsigned char ButtonInterface::buttonStates[BUTTONS_COUNT] = {0};
 volatile unsigned char ButtonInterface::lastButtonStates[BUTTONS_COUNT] = {0};
 
+// Static instance for static ISR methods to access non-static methods
+ButtonInterface* ButtonInterface::instance = nullptr;
+
+// Option 1: Use timer for interrupt to check button states and debounce
 ISR(TIMER2_OVF_vect) {
-    if (ButtonInterface::instance != nullptr) {
+	if (ButtonInterface::instance != nullptr && 
+        ButtonInterface::instance->interuptType == TIMER_2_INTERUPT) {
         ButtonInterface::instance->updateButtonStates();
     }
 }
 
-// Static instance for static ISR methods to access non-static methods
-ButtonInterface* ButtonInterface::instance = nullptr;
+// Option 2: Use pin change interrupt to check button states and debounce
+ISR(BUTTON_ISR_VECT) {
+	if (ButtonInterface::instance != nullptr && 
+        ButtonInterface::instance->interuptType == PIN_CHANGE_INTERUPT) {
+        ButtonInterface::instance->updateButtonStates();
+    }
+}
 
 //======================================================================
 // Constructor
@@ -34,8 +44,32 @@ ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface)
         BUTTONS_PORT |= (1 << buttonBits[i]);
     }
 
+	// Enable pin change interrupt for PCINT0 Group (D8-D13)
+    PCICR |= (1 << PCIE0);
+    PCMSK0 |= (1 << PCINT1) | (1 << PCINT2) | (1 << PCINT3);
+    /* Global Interupts must be enabled in main.cpp with sei() */
+
 	// Static instance for static methods to access non-static methods
     instance = this;
+
+	// Set the default button interupt type & debounce bitMask
+	instance->interuptType = TIMER_2_INTERUPT;
+	instance->debounceBitMask = TIMER_DEBOUNCE_BITMASK;
+}
+
+//======================================================================
+// Public Method: setInterruptType()
+// Description:   Setter method to set the button interupt type & 
+//                corresponding debounce bitMask.
+//======================================================================
+void ButtonInterface::setInterruptType(ButtonInteruptType type) {
+	if (type == TIMER_2_INTERUPT) {
+		ButtonInterface::instance->interuptType = TIMER_2_INTERUPT;
+		ButtonInterface::instance->debounceBitMask = TIMER_DEBOUNCE_BITMASK;
+	} else if (type == PIN_CHANGE_INTERUPT) {
+		ButtonInterface::instance->interuptType = PIN_CHANGE_INTERUPT;
+		ButtonInterface::instance->debounceBitMask = PCI_DEBOUNCE_BITMASK;
+	}
 }
 
 //======================================================================
@@ -72,6 +106,7 @@ void ButtonInterface::updateButtonStates() {
         }
     }
 }
+
 //======================================================================
 // Private Methods: readButton, buttonDebounce, handleButtonAction
 // Description:     Reads the state of the button, debounces the input,
@@ -84,7 +119,7 @@ bool ButtonInterface::readButton(unsigned char buttonBit) {
 
 ButtonStatus ButtonInterface::buttonDebounce(unsigned char btn) {
     // Set button press stable when X consecutive reads are the same
-    unsigned char bitMask = BUTTON_DEBOUNCE_MASK;
+    unsigned char bitMask = debounceBitMask;
 
     // Check the state of the button and return button status
     if((btn & bitMask) == bitMask) return BUTTON_PRESSED;

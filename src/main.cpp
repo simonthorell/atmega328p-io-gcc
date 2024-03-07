@@ -19,9 +19,11 @@ void timer2_init();
 // Main Function (Setup)
 //======================================================================
 int main(void) {
-    sei();         // Enable Global Interrupts
-    timer2_init(); // Initialize Timer2 for button debouncing
-    USART serial;  // Init UART with default baud rate
+    sei();          // Enable Global Interrupts (Pin Change Interrupts)
+    timer2_init();  // Timer2 = 8-bit timer     (Button Timer Interrupt)
+
+     // Init UART with default baud rate
+    USART serial; 
 
     // Initialize Hardware
     LEDInterface     led;

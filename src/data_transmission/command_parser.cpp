@@ -105,8 +105,18 @@ void CommandParser::parsePwmCommand(const char* command) {
 }
 
 void CommandParser::parseButtonCommand(const char* command) {
+    if (strcmp(command, "button timer interupt") == 0) {
+        button.setInterruptType(TIMER_2_INTERUPT);
+    }
+
+    if (strcmp(command, "button pci interupt") == 0) {
+        button.setInterruptType(PIN_CHANGE_INTERUPT);
+    }
+
     if (strcmp(command, "button state") == 0) {
         unsigned char lastPrintedStates[BUTTONS_COUNT] = {0};
+
+        uint8_t pressCounter = 50; // Number of presses before cancel the loop
 
         while(1) {
             for (int i = 0; i < BUTTONS_COUNT; ++i) {
@@ -130,11 +140,15 @@ void CommandParser::parseButtonCommand(const char* command) {
                     serial.print(indexBuffer);
                     serial.print(bitString);
                     serial.print("\n");
+
+                    pressCounter--;
+
+                    if (pressCounter == 0) {
+                        return; // Break the loop
+                    }
+
                 }
             }
-
-            // TODO: Add logic to cancel the loop in some clever way...
-
         }
     }
 }
