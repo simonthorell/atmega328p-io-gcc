@@ -4,107 +4,99 @@
 #include "hardware_interfaces/button_interface.h"
 #include <util/delay.h>
 
-// TODO: Improve ISR for button interface
-static ButtonInterface* buttonInterfaceInstance = nullptr;
+#define BUTTON_DEBOUNCE_MASK 0b00011111 // 5 consecutive reads = press
 
-bool ButtonInterface::prevButton1State = false;
-bool ButtonInterface::prevButton2State = false;
-bool ButtonInterface::prevButton3State = false;
+const unsigned char ButtonInterface::buttonBits[BUTTONS_COUNT] = {
+    BUTTON_1_BIT, BUTTON_2_BIT, BUTTON_3_BIT // Mapped in mcu_mapping.h
+};
 
-#define BUTTON_DEBOUNCE_DELAY 80 // ms
+// Variable to hold 8-bit state of all buttons (count defined in mcu_mapping.h)
+volatile unsigned char ButtonInterface::buttonStates[BUTTONS_COUNT] = {0};
+volatile unsigned char ButtonInterface::lastButtonStates[BUTTONS_COUNT] = {0};
 
-// TODO: Replace with timer interrupt and buttonDebounce method
-ISR(BUTTON_ISR_VECT) {
-    if (buttonInterfaceInstance != nullptr) {
-        buttonInterfaceInstance->checkButtons();
+ISR(TIMER2_OVF_vect) {
+    if (ButtonInterface::instance != nullptr) {
+        ButtonInterface::instance->updateButtonStates();
     }
 }
+
+// Static instance for static ISR methods to access non-static methods
+ButtonInterface* ButtonInterface::instance = nullptr;
 
 //======================================================================
 // Constructor
 //======================================================================
 ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface) {
-    buttonInterfaceInstance = this; // Set the static or global instance pointer
+    for (int i = 0; i < BUTTONS_COUNT; ++i) {
+        // Set the button pin as input by clearing the DDR bit
+        BUTTONS_DDR &= ~(1 << buttonBits[i]);
+        // Enable the pull-up resistor by setting the PORT bit
+        BUTTONS_PORT |= (1 << buttonBits[i]);
+    }
 
-    // Set the button pins as input
-    BUTTONS_DDR &= ~((1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
-                     (1 << BUTTON_3_BIT));
-    
-    // Enable pull-up resistors
-    BUTTONS_PORT |= (1 << BUTTON_1_BIT) | (1 << BUTTON_2_BIT) | 
-                    (1 << BUTTON_3_BIT);
-
-    // Enable pin change interrupt for PCINT0 Group (D8-D13)
-    PCICR |= (1 << PCIE0);
-    PCMSK0 |= (1 << PCINT1) | (1 << PCINT2) | (1 << PCINT3);
-
-    /* Note: Global Interupts 'sei()' are enabled in main.cpp */
-
-    // Turn off the LEDs
-    LED.greenOff();
-    LED.redOff();
-    LED.blueOff();
+	// Static instance for static methods to access non-static methods
+    instance = this;
 }
 
 //======================================================================
-// Public Method: buttonPress
-// Description:   Returns the state of the button
+// Public Method: updateButtonStatesISR()
+// Description:   Static method that updates the button states in ISR
 //======================================================================
+void ButtonInterface::updateButtonStates() {
+    if (ButtonInterface::instance) {
+        for (int i = 0; i < BUTTONS_COUNT; ++i) {
+            // Shift the current state to left to make room for the new state
+            buttonStates[i] <<= 1;
+
+            // Read the current button state and set the least significant bit
+            if (ButtonInterface::instance->readButton(buttonBits[i])) {
+                buttonStates[i] |= 0x01; // '1' bit for pressed state
+            }
+
+            // Debounce the current state
+            ButtonStatus currentState = 
+                ButtonInterface::instance->buttonDebounce(buttonStates[i]);
+
+            // Detect transitions to pressed state
+            bool buttonIsPressed =
+                currentState == BUTTON_PRESSED && 
+				// Check last state to avoid multiple actions/toggles
+                ButtonInterface::instance->lastButtonStates[i] != BUTTON_PRESSED;
+                
+            if (buttonIsPressed) {
+                ButtonInterface::instance->handleButtonAction(i);
+            }
+
+            // Update the last debounced state for the next cycle
+            ButtonInterface::instance->lastButtonStates[i] = currentState;
+        }
+    }
+}
+//======================================================================
+// Private Methods: readButton, buttonDebounce, handleButtonAction
+// Description:     Reads the state of the button, debounces the input,
+//                  and handles the button action.
+//======================================================================
+bool ButtonInterface::readButton(unsigned char buttonBit) {
+    // Use the bit definitions from mcu_mapping.h (LED_GREEN_BIT, etc.)
+    return !(BUTTONS_PIN & (1 << buttonBit));
+}
+
 ButtonStatus ButtonInterface::buttonDebounce(unsigned char btn) {
-    // Set button press stable when 5 consecutive reads are the same
-    unsigned char bitMask = 0b00011111;
+    // Set button press stable when X consecutive reads are the same
+    unsigned char bitMask = BUTTON_DEBOUNCE_MASK;
 
     // Check the state of the button and return button status
-    if((btn & bitMask) == bitMask) return BUTTON_PRESSED;  // 5 last = 1
-    if((btn & bitMask) == 0)       return BUTTON_RELEASED; // 5 last = 0
-    return  BUTTON_UNKOWN; // Else, return 'unknown state'.
+    if((btn & bitMask) == bitMask) return BUTTON_PRESSED;
+    if((btn & bitMask) == 0)       return BUTTON_RELEASED;
+    return  BUTTON_BOUNCING;
 }
 
-//======================================================================
-// Private Methods: readButton1, readButton2, readButton3
-// Description:    Reads the state of each button
-//======================================================================
-bool ButtonInterface::readButton1() {
-    return !(BUTTONS_PIN & (1 << BUTTON_1_BIT));
-}
-
-bool ButtonInterface::readButton2() {
-    return !(BUTTONS_PIN & (1 << BUTTON_2_BIT));
-}
-
-bool ButtonInterface::readButton3() {
-    return !(BUTTONS_PIN & (1 << BUTTON_3_BIT));
-}
-
-//======================================================================
-// Public Method: checkButtons
-// Description:   Checks the state of each button and debounces the 
-//                input.
-//======================================================================
-void ButtonInterface::checkButtons() {
-    _delay_ms(BUTTON_DEBOUNCE_DELAY);
-
-    bool currentButton1State = readButton1();
-    if (currentButton1State != prevButton1State) {
-        prevButton1State = currentButton1State;
-        if (prevButton1State) {
-            LED.greenToggle();
-        }
-    }
-
-    bool currentButton2State = readButton2();
-    if (currentButton2State != prevButton2State) {
-        prevButton2State = currentButton2State;
-        if (prevButton2State) {
-            LED.redToggle();
-        }
-    }
-
-    bool currentButton3State = readButton3();
-    if (currentButton3State != prevButton3State) {
-        prevButton3State = currentButton3State;
-        if (prevButton3State) {
-            LED.blueToggle();
-        }
+void ButtonInterface::handleButtonAction(int buttonIndex) {
+    switch (buttonIndex) {
+        case 0: LED.greenToggle(); break;
+        case 1: LED.redToggle();   break;
+        case 2: LED.blueToggle();  break;
+        // Add pin mapping in 'mcu_mapping.h' for more buttons and logic here...
     }
 }

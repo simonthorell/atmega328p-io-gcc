@@ -33,6 +33,14 @@
 // Button Interrupt definitions
 #define BUTTON_ISR_VECT PCINT0_vect // Pin change interrupt vector (D8-D13)
 
+// Button counter
+typedef enum {
+    BUTTON_1 = 0,
+    BUTTON_2,
+    BUTTON_3,
+    BUTTONS_COUNT // Will give the amount of buttons
+} ButtonIndex;
+
 // Potentiometer ADC Channel
 #define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
 

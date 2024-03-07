@@ -12,29 +12,37 @@
 typedef enum {
     BUTTON_PRESSED,
     BUTTON_RELEASED,
-    BUTTON_UNKOWN
+    BUTTON_BOUNCING
 } ButtonStatus;
 
 class ButtonInterface {
 public:
     ButtonInterface(LEDInterface& ledInterface);
-    void checkButtons();
+
+    // Static instance for static methods to access non-static methods
+    static ButtonInterface* instance;
+
+    // Static method to update button states in the ISR
+    static void updateButtonStates();
+
+    // Make public to allow serial debugging of button states
+    static volatile unsigned char buttonStates[BUTTONS_COUNT];
+    static volatile bool execButtonAction; // Debugging
+    static volatile unsigned char lastButtonStates[BUTTONS_COUNT];
 
 private:
     // Reference to LEDInterface for controlling LEDs
     LEDInterface& LED;
 
-    // Check button status and debounce
+    // Define static variables for button states and debouncing
+    static const unsigned char buttonBits[BUTTONS_COUNT];
+    // static volatile unsigned char buttonStates[BUTTONS_COUNT];
+
+    // Private methods to read and handle button actions
+    bool readButton(unsigned char buttonBit);
     ButtonStatus buttonDebounce(unsigned char btn);
+    void handleButtonAction(int buttonIndex);
 
-    // Private methods to read the state of each button
-    bool readButton1();
-    bool readButton2();
-    bool readButton3();
-
-    static bool prevButton1State;
-    static bool prevButton2State;
-    static bool prevButton3State;
 };
 
 #endif // BUTTON_INTERFACE_H

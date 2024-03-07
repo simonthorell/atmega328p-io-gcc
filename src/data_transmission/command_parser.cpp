@@ -105,8 +105,38 @@ void CommandParser::parsePwmCommand(const char* command) {
 }
 
 void CommandParser::parseButtonCommand(const char* command) {
-    /* TODO: Implement... */
-    (void)command;
+    if (strcmp(command, "button state") == 0) {
+        unsigned char lastPrintedStates[BUTTONS_COUNT] = {0};
+
+        while(1) {
+            for (int i = 0; i < BUTTONS_COUNT; ++i) {
+                if (button.buttonStates[i] != lastPrintedStates[i]) {
+                    // State has changed, update flag and last printed state
+                    lastPrintedStates[i] = button.buttonStates[i];
+                    
+                    // Prepare to print button index
+                    char indexBuffer[20]; // Ensure this buffer is large enough
+                    snprintf(indexBuffer, sizeof(indexBuffer), "Button %d State: ", i);
+
+                    // Generate bit string for new state
+                    char bitString[9]; // Buffer for the binary representation + null terminator
+                    unsigned char state = button.buttonStates[i];
+                    for (int bit = 7; bit >= 0; --bit) {
+                        bitString[7 - bit] = (state & (1 << bit)) ? '1' : '0';
+                    }
+                    bitString[8] = '\0'; // Null-terminate the string
+
+                    // Print updated state with a label indicating the button index
+                    serial.print(indexBuffer);
+                    serial.print(bitString);
+                    serial.print("\n");
+                }
+            }
+
+            // TODO: Add logic to cancel the loop in some clever way...
+
+        }
+    }
 }
 
 void CommandParser::parsePotentiometerCommand(const char* command) {

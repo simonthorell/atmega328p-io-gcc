@@ -13,12 +13,14 @@
 
 // Function Prototypes
 void loop(USART &serial, CommandParser &commandParser);
+void timer2_init();
 
 //======================================================================
 // Main Function (Setup)
 //======================================================================
 int main(void) {
     sei();         // Enable Global Interrupts
+    timer2_init(); // Initialize Timer2 for button debouncing
     USART serial;  // Init UART with default baud rate
 
     // Initialize Hardware
@@ -48,4 +50,16 @@ void loop(USART &serial, CommandParser &commandParser) {
         // Process the received command
         commandParser.parseCommand(receivedCommand);
     }
+}
+
+//======================================================================
+// Timers (TODO: Move to timer class)
+//======================================================================
+void timer2_init()
+{
+  TCCR2A = 0;            // Init Timer2A
+  TCCR2B = 0;            // Init Timer2B
+  TCCR2B |= 0B00000111;  // Prescaler = 1024
+  TCNT2 = 5;             // Timer Preloading
+  TIMSK2 |= 0B00000001;  // Enable Timer Overflow Interrupt
 }
