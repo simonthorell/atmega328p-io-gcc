@@ -1,13 +1,12 @@
+//==============================================================================
+// PWM Interface Class Implementation
+//==============================================================================
 #include "hardware_interfaces/pwm_interface.h"
-#include "mcu_mapping.h"
 
+//==============================================================================
 // Constructor
+//==============================================================================
 PWMInterface::PWMInterface() {
-    this->init();
-    setDutyCycle(255); // Max duty cycle
-}
-
-void PWMInterface::init() {
     // Set PWM pin as output
     PWM_OUTPUT_DDR |= (1 << PWM_OUTPUT_BIT);
     
@@ -17,8 +16,15 @@ void PWMInterface::init() {
 
     // Set initial PWM frequency (prescaler)
     PWM_TCCRB |= (1 << PWM_CSx1); // Example: clk/8 prescaler
+
+    // Set initial duty cycle
+    setDutyCycle(255); // Max duty cycle (0-255)
 }
 
+//==============================================================================
+// Public Method: setDutyCycle
+// Description:   Set the duty cycle of the PWM signal
+//==============================================================================
 void PWMInterface::setDutyCycle(uint8_t duty) {
     // Set duty cycle (0 to 255)
     PWM_OUTPUT_OC = duty;

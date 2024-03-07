@@ -1,12 +1,13 @@
+//==============================================================================
+// ADC Interface Class Implementation
+//==============================================================================
 #include "hardware_interfaces/adc_interface.h"
 #include <avr/io.h>
 
+//==============================================================================
+// Constructor
+//==============================================================================
 ADCInterface::ADCInterface() {
-    // Constructor might be left empty or used to automatically initialize the ADC
-    Init();
-}
-
-void ADCInterface::Init() {
     // AVCC with external capacitor at AREF pin
     ADMUX = (1<<REFS0);
     // ADC Enable and prescaler of 128
@@ -14,6 +15,10 @@ void ADCInterface::Init() {
     ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
 }
 
+//==============================================================================
+// Public Method: Read
+// Description:   Read the value from the specified ADC channel
+//==============================================================================
 uint16_t ADCInterface::Read(uint8_t ch) {
     // Select the corresponding channel 0~7
     ch &= 0b00000111; // AND operation with 7

@@ -2,12 +2,15 @@
 #define PWM_INTERFACE_H
 
 #include <avr/io.h>
+#include "mcu_mapping.h"
 
 class PWMInterface {
 public:
+    // Constructor
     PWMInterface(); // Constructor
-    void init(); // Initializes PWM
-    void setDutyCycle(uint8_t duty); // Sets the PWM duty cycle
+
+    // Set the duty cycle of the PWM signal
+    void setDutyCycle(uint8_t duty); 
 };
 
 #endif // PWM_INTERFACE_H
