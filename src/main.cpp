@@ -1,12 +1,13 @@
-//======================================================================
+//==============================================================================
 // Main Application
-//======================================================================
+//==============================================================================
 #include <avr/io.h>        // AVR I/O
 #include <avr/interrupt.h> // AVR Interrupts
 
 // Include Application Header-files
 #include "data_transmission/usart.h"
 #include "data_transmission/command_parser.h"
+#include "hardware_interfaces/timer.h"
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
@@ -14,28 +15,29 @@
 
 // Function Prototypes
 void loop(USART &serial, CommandParser &commandParser);
-void timer2_init();
 
-//======================================================================
+//==============================================================================
 // Main Function (Setup)
-//======================================================================
+//==============================================================================
 int main(void) {
-    sei();          // Enable Global Interrupts (Pin Change Interrupts)
-    timer2_init();  // Timer2 = 8-bit timer     (Button Timer Interrupt)
+    // Enable Global Interrupts (Button Pin Change Interrupts)
+    sei();
 
-     // Init UART with default baud rate
+    // Initialize timers
+    Timer timer2(Timer::TIMER2);  // Timer2 = 8-bit Timer
+    timer2.init();                // Use for button PIC and PWM
+
+    // Init UART with default baud rate (serial print/read)
     USART serial; 
 
     // Initialize Hardware
     LEDInterface     led;
     ButtonInterface  button(led);
-    ADCInterface     adcInterface;
-    PWMInterface     pwmInterface;
+    ADCInterface     adc;
+    PWMInterface     pwm;
 
-    // Initialize UART command parser
-    CommandParser commandParser(serial, led, button, adcInterface, 
-                                pwmInterface
-                               );
+    // Initialize UART command parser (execute commands from UART input)
+    CommandParser commandParser(serial, led, button, adc, pwm);
 
     // Run the application loop
     loop(serial, commandParser);
@@ -43,9 +45,9 @@ int main(void) {
     return 0;
 }
 
-//======================================================================
+//==============================================================================
 // Main Loop
-//======================================================================
+//==============================================================================
 void loop(USART &serial, CommandParser &commandParser) {
     char receivedCommand[USART_CMD_BUFFER]; // command buffer
 
@@ -56,16 +58,4 @@ void loop(USART &serial, CommandParser &commandParser) {
         // Process the received command
         commandParser.parseCommand(receivedCommand);
     }
-}
-
-//======================================================================
-// Timers (TODO: Move to timer class)
-//======================================================================
-void timer2_init()
-{
-  TCCR2A = 0;            // Init Timer2A
-  TCCR2B = 0;            // Init Timer2B
-  TCCR2B |= 0B00000111;  // Prescaler = 1024
-  TCNT2 = 5;             // Timer Preloading
-  TIMSK2 |= 0B00000001;  // Enable Timer Overflow Interrupt
 }
