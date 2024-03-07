@@ -30,10 +30,10 @@
 #define BUTTON_2_BIT    PORTB2  // Arduino Digital Pin 10
 #define BUTTON_3_BIT    PORTB3  // Arduino Digital Pin 11
 
-// Button Interrupt definitions
-#define BUTTON_ISR_VECT PCINT0_vect // Pin change interrupt vector (D8-D13)
+// Button Pin Change Interrupt (PIC) vector (D8-D13)
+#define BUTTON_ISR_VECT PCINT0_vect
 
-// Button counter
+// Button enum for easy indexing and state storage
 typedef enum {
     BUTTON_1 = 0,
     BUTTON_2,
@@ -44,17 +44,17 @@ typedef enum {
 // Potentiometer ADC Channel
 #define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
 
+// PWM to ADC Channel
+#define PWM_ADC_CHANNEL 1 // Arduino Analog Pin ADC1
+
 //======================================================================
 // PWM Definitions
 //======================================================================
-
-/* TODO: Using PWM on same pin as led on/off etc causes interference */
-
 // Define which pin is used for PWM to map correct registers
 #define USING_PWM_PIN_3
 
+// Definitions for PWM on Pin 3 using Timer 2 (8-bit)
 #ifdef USING_PWM_PIN_3
-    // Definitions for PWM on Pin 3 using Timer 2
     #define PWM_OUTPUT_DDR   DDRD
     #define PWM_OUTPUT_BIT   PORTD3
     #define PWM_OUTPUT_OC    OCR2B
@@ -64,8 +64,8 @@ typedef enum {
     #define PWM_WGMx0        WGM20
     #define PWM_WGMx1        WGM21
     #define PWM_CSx1         CS21
-#elif defined(USING_PWM_PIN_5)
-    // Definitions for PWM on Pin 5 using Timer 0
+// Example for 16-bit Timer 1 using Pin D5
+#elif defined(USING_PWM_PIN_5) 
     #define PWM_OUTPUT_DDR   DDRD
     #define PWM_OUTPUT_BIT   PORTD5
     #define PWM_OUTPUT_OC    OCR0B

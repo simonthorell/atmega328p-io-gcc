@@ -1,27 +1,32 @@
-//======================================================================
+//==============================================================================
 // Command Parser Class Implementation
-//======================================================================
+//==============================================================================
 #include "data_transmission/command_parser.h"
 #include "hardware_interfaces/adc_interface.h"
 #include <util/delay.h>
 #include <string.h>
 #include <stdio.h>
 
-//======================================================================
+//==============================================================================
 // Constructor
-//======================================================================
+//==============================================================================
 CommandParser::CommandParser(USART& serial, LEDInterface& led, 
                              ButtonInterface& button, ADCInterface& adcInterface,
                              PWMInterface& pwmInterface) 
-    : serial(serial), led(led), button(button), adcInterface(adcInterface), 
-      pwmInterface(pwmInterface) {
+    : serial(serial), 
+      led(led), 
+      button(button), 
+      adcInterface(adcInterface), 
+      pwmInterface(pwmInterface) 
+{
+    // Empty constructor for now
 }
 
-//======================================================================
+//==============================================================================
 // Public Methods: parseCommand
 // Description:    Parses a command string received over UART and 
 //                 executes the corresponding command.
-//======================================================================
+//==============================================================================
 void CommandParser::parseCommand(const char* command) {
     if (strncmp(command, "led", 3) == 0) {
         this->parseLedCommand(command);
@@ -42,11 +47,11 @@ void CommandParser::parseCommand(const char* command) {
     }
 }
 
-//======================================================================
+//==============================================================================
 // Private Methods: parseLedCommand, parseButtonCommand, 
 //                  parsePotentiometerCommand
 // Description:     Parses and executes the corresponding UART-command.
-//======================================================================
+//==============================================================================
 void CommandParser::parseLedCommand(const char* command) {
     if (strcmp(command, "led green on") == 0) {
         led.greenOn();
@@ -66,15 +71,15 @@ void CommandParser::parseLedCommand(const char* command) {
 }
 
 void CommandParser::parsePwmCommand(const char* command) {
-    // PWMInterface pwm;
-
+    // Continuously adjust LED brightness based on potentiometer value
     if (strcmp(command, "pwm led pot") == 0) {
-       // Continuously adjust LED brightness based on potentiometer value
         while (1) {
-            // Assuming adcInterface is an instance of AdcInterface and properly initialized
+            // Get ADC value from potentiometer
             uint16_t adcValue = adcInterface.Read(POT_ADC_CHANNEL);
+
             // Map ADC value (0-1023) to duty cycle (0-255)
-            uint8_t dutyCycle = static_cast<uint8_t>(map(adcValue, 0, 1023, 0, 255));
+            uint8_t dutyCycle = static_cast<uint8_t>(
+                map(adcValue, 0, 1023, 0, 255));
 
             // Set PWM duty cycle according to ADC value
             pwmInterface.setDutyCycle(dutyCycle);
@@ -87,14 +92,17 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
+    // Set LED brightness based on a command input
     if (strncmp(command, "pwm led ", 8) == 0) {
-        int level; // Extract the brightness level from the command
-        // Using sscanf to convert the substring following "pwm led " into an integer
-        if (sscanf(command + 8, "%d", &level) == 1) { // Ensure the conversion succeeds
+        // Variable for the substring following "pwm led"
+        int level;
+        // Ensure the conversion succeeds
+        if (sscanf(command + 8, "%d", &level) == 1) { 
 
             // Check if the level is within the valid range
             if (level >= 0 && level <= 10) {
-                uint8_t dutyCycle = static_cast<uint8_t>(map(level, 0, 10, 0, 255));
+                uint8_t dutyCycle = static_cast<uint8_t>(
+                    map(level, 0, 10, 0, 255));
 
                 // Set the LED brightness
                 pwmInterface.setDutyCycle(dutyCycle);
@@ -119,40 +127,41 @@ void CommandParser::parseButtonCommand(const char* command) {
     if (strcmp(command, "button state") == 0) {
         unsigned char lastPrintedStates[BUTTONS_COUNT] = {0};
 
-        uint8_t pressCounter = 50; // Number of presses before cancel the loop
+        // Set loop cancel condition at 35 presses/bounces
+        uint8_t pressCounter = 35;
 
         while(1) {
-            for (int i = 0; i < BUTTONS_COUNT; ++i) {
-                if (button.buttonStates[i] != lastPrintedStates[i]) {
-                    // State has changed, update flag and last printed state
-                    lastPrintedStates[i] = button.buttonStates[i];
-                    
-                    // Prepare to print button index
-                    char indexBuffer[20]; // Ensure this buffer is large enough
-                    snprintf(indexBuffer, sizeof(indexBuffer), "Button %d State: ", i);
+        for (int i = 0; i < BUTTONS_COUNT; ++i) {
+            if (button.buttonStates[i] != lastPrintedStates[i]) {
+                // Update state and prepare for printing
+                lastPrintedStates[i] = button.buttonStates[i];
 
-                    // Generate bit string for new state
-                    char bitString[9]; // Buffer for the binary representation + null terminator
-                    unsigned char state = button.buttonStates[i];
-                    for (int bit = 7; bit >= 0; --bit) {
-                        bitString[7 - bit] = (state & (1 << bit)) ? '1' : '0';
-                    }
-                    bitString[8] = '\0'; // Null-terminate the string
+                // Buffer for printing button index
+                char indexBuffer[20];
+                snprintf(indexBuffer, sizeof(indexBuffer), "Button %d State: ", i);
 
-                    // Print updated state with a label indicating the button index
-                    serial.print(indexBuffer);
-                    serial.print(bitString);
-                    serial.print("\n");
+                // Binary state representation buffer
+                char bitString[9]; // 8 bits + null terminator
+                unsigned char state = button.buttonStates[i];
+                for (int bit = 7; bit >= 0; --bit) {
+                    bitString[7 - bit] = (state & (1 << bit)) ? '1' : '0';
+                }
+                bitString[8] = '\0'; // Ensure null-termination
 
-                    pressCounter--;
+                // Print button state
+                serial.print(indexBuffer);
+                serial.print(bitString);
+                serial.print("\n");
 
-                    if (pressCounter == 0) {
-                        return; // Break the loop
-                    }
+                pressCounter--;
 
+                // Exit loop after 50 button press changes
+                if (pressCounter == 0) {
+                    return; // Exit if condition met
                 }
             }
         }
+    }
     }
 }
 
@@ -184,15 +193,29 @@ void CommandParser::parsePotentiometerCommand(const char* command) {
     }
 }
 
-//======================================================================
+//==============================================================================
 // Private Methods: printHelp, printError
 // Description:     Prints a help message or an error message over UART.
-//======================================================================
+//==============================================================================
 void CommandParser::printHelp() {
-    /* TODO: Implement... */
+    serial.print("  Available commands:\n");
+    serial.print("  - led green on\n");
+    serial.print("  - led green off\n");
+    serial.print("  - led red on\n");
+    serial.print("  - led red off\n");
+    serial.print("  - led blue on\n");
+    serial.print("  - led blue off\n");
+    serial.print("  - led lightshow (random LED on/off sequence)\n");
+    serial.print("  - button timer interupt\n");
+    serial.print("  - button pci interupt\n");
+    serial.print("  - button state (Print bitmapping of 30 button presses/bounces)\n");
+    serial.print("  - adc read pot (Cancel by turning pot to 0)\n");
+    serial.print("  - pwm led pot (Cancel by turning pot to 0)\n");
+    serial.print("  - pwm led [0-10] (Example: 'pwm led 5' = 50% brightness)\n");
+    serial.print("  - help\n");
 }
 
 void CommandParser::printError(const char* message) {
-    /* TODO: Implement... */
-    (void)message; 
+    serial.print("Error: ");
+    serial.print(message);
 }
