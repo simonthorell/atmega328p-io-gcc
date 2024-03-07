@@ -43,7 +43,7 @@ private:
     void parseLedCommand(const char* command);
     void parsePwmCommand(const char* command);
     void parseButtonCommand(const char* command);
-    void parsePotentiometerCommand(const char* command);
+    void parseAdcCommand(const char* command);
     void printHelp();
     void printError(const char* message);
 

@@ -33,7 +33,7 @@ void CommandParser::parseCommand(const char* command) {
         this->parseButtonCommand(command);
     }
     else if (strncmp(command, "adc", 3) == 0) {
-        this->parsePotentiometerCommand(command);
+        this->parseAdcCommand(command);
     }
     else if (strncmp(command, "pwm", 3) == 0) {
         this->parsePwmCommand(command);
@@ -46,7 +46,7 @@ void CommandParser::parseCommand(const char* command) {
 }
 
 //==============================================================================
-// Private Methods: parseLedCommand, parseButtonCommand, 
+// Private Methods: parseLedCommand, parsePwmCommand, parseButtonCommand, 
 //                  parsePotentiometerCommand
 // Description:     Parses and executes the corresponding UART-command.
 //==============================================================================
@@ -163,7 +163,7 @@ void CommandParser::parseButtonCommand(const char* command) {
     }
 }
 
-void CommandParser::parsePotentiometerCommand(const char* command) {
+void CommandParser::parseAdcCommand(const char* command) {
     if (strcmp(command, "adc read pot") == 0) {
         char buffer[128];
         while (1) {
