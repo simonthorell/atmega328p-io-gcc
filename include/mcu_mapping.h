@@ -44,7 +44,7 @@ typedef enum {
 // Potentiometer ADC Channel
 #define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
 
-// PWM to ADC Channel
+// PWM to ADC Channel (Use PWM from PIN D3 by disable LED on Pin D5)
 #define PWM_ADC_CHANNEL 1 // Arduino Analog Pin ADC1
 
 //======================================================================
