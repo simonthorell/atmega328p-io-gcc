@@ -43,9 +43,11 @@ Data::Data(USART& serial) : serial(serial) {}
 // Description:    Prints all available commands over UART
 //==============================================================================
 void Data::printCommands() const {
-    char buffer[PROGMEM_BUFFER_SIZE]; // Adjust based on the longest string
+    char buffer[PROGMEM_BUFFER_SIZE]; // Buffer to store the string
+
     // Loop through the command strings
     for (unsigned int i = 0; i < sizeof(commandStrings) / sizeof(commandStrings[0]); i++) {
+
         // Print a prefix before each command (For serial styling only)
         serial.print("  -");
 
