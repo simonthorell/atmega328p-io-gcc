@@ -19,7 +19,7 @@ ADCInterface::ADCInterface() {
 // Public Method: Read
 // Description:   Read the value from the specified ADC channel
 //==============================================================================
-uint16_t ADCInterface::Read(uint8_t ch) {
+uint16_t ADCInterface::readADC(uint8_t ch) {
     // Select the corresponding channel 0~7
     ch &= 0b00000111; // AND operation with 7
     ADMUX = (ADMUX & 0xF8)|ch; // Clears the bottom 3 bits before ORing

@@ -9,7 +9,7 @@ public:
     ADCInterface();
 
     // Public Method to read from a specific ADC channel
-    uint16_t Read(uint8_t ch); 
+    uint16_t readADC(uint8_t ch); 
 };
 
 #endif // ADCInterface_H
