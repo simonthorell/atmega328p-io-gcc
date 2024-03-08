@@ -68,7 +68,7 @@ void CommandParser::parsePwmCommand(const char* command) {
     if (strcmp(command, "pwm led pot") == 0) {
         while (1) {
             // Get ADC value from potentiometer
-            uint16_t adcValue = adc.Read(POT_ADC_CHANNEL);
+            uint16_t adcValue = adc.readADC(POT_ADC_CHANNEL);
 
             // Map ADC value (0-1023) to duty cycle (0-255)
             uint8_t dutyCycle = static_cast<uint8_t>(
@@ -163,7 +163,7 @@ void CommandParser::parseAdcCommand(const char* command) {
         char buffer[128];
         while (1) {
             // Read ADC value and convert to voltage
-            uint16_t adcValue = adc.Read(POT_ADC_CHANNEL);
+            uint16_t adcValue = adc.readADC(POT_ADC_CHANNEL);
             float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
 
             // Manually convert the voltage to a string
