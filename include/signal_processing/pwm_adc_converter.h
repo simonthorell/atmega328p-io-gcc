@@ -9,6 +9,10 @@ public:
     // Constructor
     PwmAdcConverter(ADCInterface& adc , PWMInterface& pwm);
 
+    // Setter & Getter methods
+    uint16_t getPwmAdcReading();
+    void setPwmDutyCycle(uint8_t dutyCycle);
+
 private:
     // ADC and PWM interfaces objects
     ADCInterface& adc;

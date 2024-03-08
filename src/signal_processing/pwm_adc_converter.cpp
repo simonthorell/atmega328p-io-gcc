@@ -13,6 +13,12 @@ PwmAdcConverter::PwmAdcConverter(ADCInterface& adc , PWMInterface& pwm)
 }
 
 //=======================================================================
-// TODO: Convert PWM value to ADC signal
+// Setters & Getters: setPwmFrequency, setPwmDutyCycle
 //=======================================================================
-// TODO: Implement...
+void PwmAdcConverter::setPwmDutyCycle(uint8_t dutyCycle) {
+    pwm.setDutyCycle(dutyCycle);
+}
+
+uint16_t PwmAdcConverter::getPwmAdcReading() {
+    // TODO: Add something....
+}
