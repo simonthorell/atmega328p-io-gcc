@@ -1,13 +1,13 @@
-#ifndef ADC_PWM_CONVERTER_H
-#define ADC_PWM_CONVERTER_H
+#ifndef PWM_ADC_CONVERTER_H
+#define PWM_ADC_CONVERTER_H
 
 #include "hardware_interfaces/adc_interface.h"
 #include "hardware_interfaces/pwm_interface.h"
 
-class AdcPwmConverter {
+class PwmAdcConverter {
 public:
     // Constructor
-    AdcPwmConverter(ADCInterface& adc , PWMInterface& pwm);
+    PwmAdcConverter(ADCInterface& adc , PWMInterface& pwm);
 
 private:
     // ADC and PWM interfaces objects
@@ -15,4 +15,4 @@ private:
     PWMInterface& pwm;
 };
 
-#endif // ADC_PWM_CONVERTER_H
+#endif // PWM_ADC_CONVERTER_H
