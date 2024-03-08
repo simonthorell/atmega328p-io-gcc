@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.22.2)
 # Project name
 project("avr-firmware")
 
+# TODO: Remove unnecessary flashing code as docker does not have access to USB ports
+# Use remote options instead to flash the firmware to the microcontroller
+
 # AVR Chip Configuration
 set(F_CPU 16000000UL)      # Clock frequency
 set(MCU atmega328p)        # Microcontroller unit
