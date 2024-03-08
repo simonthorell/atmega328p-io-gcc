@@ -36,8 +36,8 @@ private:
     // Hardware Interface Objects
     LEDInterface& led;
     ButtonInterface& button;
-    ADCInterface& adcInterface;
-    PWMInterface& pwmInterface;
+    ADCInterface& adc;
+    PWMInterface& pwm;
 
     // Private Methods
     void parseLedCommand(const char* command);

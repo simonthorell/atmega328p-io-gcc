@@ -11,14 +11,9 @@
 // Constructor
 //==============================================================================
 CommandParser::CommandParser(USART& serial, LEDInterface& led, 
-                             ButtonInterface& button, ADCInterface& adcInterface,
-                             PWMInterface& pwmInterface) 
-    : serial(serial), 
-      led(led), 
-      button(button), 
-      adcInterface(adcInterface), 
-      pwmInterface(pwmInterface) 
-{}
+                             ButtonInterface& button, ADCInterface& adc,
+                             PWMInterface& pwm) 
+    : serial(serial), led(led), button(button), adc(adc), pwm(pwm) {}
 
 //==============================================================================
 // Public Methods: parseCommand
@@ -73,14 +68,14 @@ void CommandParser::parsePwmCommand(const char* command) {
     if (strcmp(command, "pwm led pot") == 0) {
         while (1) {
             // Get ADC value from potentiometer
-            uint16_t adcValue = adcInterface.Read(POT_ADC_CHANNEL);
+            uint16_t adcValue = adc.Read(POT_ADC_CHANNEL);
 
             // Map ADC value (0-1023) to duty cycle (0-255)
             uint8_t dutyCycle = static_cast<uint8_t>(
                 map(adcValue, 0, 1023, 0, 255));
 
             // Set PWM duty cycle according to ADC value
-            pwmInterface.setDutyCycle(dutyCycle);
+            pwm.setDutyCycle(dutyCycle);
 
             _delay_ms(30); // Short delay to debounce/read rate control
 
@@ -103,7 +98,7 @@ void CommandParser::parsePwmCommand(const char* command) {
                     map(level, 0, 10, 0, 255));
 
                 // Set the LED brightness
-                pwmInterface.setDutyCycle(dutyCycle);
+                pwm.setDutyCycle(dutyCycle);
             } else {
                 return; // Invalid level
             }
@@ -168,7 +163,7 @@ void CommandParser::parseAdcCommand(const char* command) {
         char buffer[128];
         while (1) {
             // Read ADC value and convert to voltage
-            uint16_t adcValue = adcInterface.Read(POT_ADC_CHANNEL);
+            uint16_t adcValue = adc.Read(POT_ADC_CHANNEL);
             float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
 
             // Manually convert the voltage to a string
