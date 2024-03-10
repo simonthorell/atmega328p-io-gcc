@@ -47,6 +47,12 @@ typedef enum {
 // PWM to ADC Channel (Use PWM from PIN D3 by disable LED on Pin D5)
 #define PWM_ADC_CHANNEL 1 // Arduino Analog Pin ADC1
 
+// PWM to ADC - ON/OFF Switch (control base of transistor)
+#define PWM_ADC_SWITCH_DDR  DDRD
+#define PWM_ADC_SWITCH_PORT PORTD
+#define PWM_ADC_SWITCH_PIN  PIND
+#define PWM_ADC_SWITCH_BIT  PORTD4 // Arduino Digital Pin 4
+
 //======================================================================
 // PWM Definitions
 //======================================================================

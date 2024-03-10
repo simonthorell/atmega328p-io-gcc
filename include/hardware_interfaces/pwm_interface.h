@@ -10,7 +10,12 @@ public:
     PWMInterface(); // Constructor
 
     // Set the duty cycle of the PWM signal
-    void setDutyCycle(uint8_t duty); 
+    void setDutyCycle(uint8_t duty);
+    void setPwmVoltage(uint16_t milliVolts);
+
+    // Enable/disable PWM to ADC route (using transistor base)
+    void enablePwmToAdc();
+    void disablePwmToAdc();
 };
 
 #endif // PWM_INTERFACE_H

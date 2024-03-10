@@ -106,6 +106,60 @@ void CommandParser::parsePwmCommand(const char* command) {
             return; // Parsing error
         }
     }
+
+    if (strcmp(command, "pwm enable adc") == 0) {
+        // Switch on transistor 'PWM => ADC' route
+        pwm.enablePwmToAdc();
+    }
+
+    if (strcmp(command, "pwm disable adc") == 0) {
+        // Switch off transistor 'PWM => ADC' route
+        pwm.disablePwmToAdc();
+    }
+
+    if (strncmp(command, "pwm adc ", 8) == 0) {
+    int milliVolts;
+
+        // Attempt to parse the millivolts value from the command
+        if (sscanf(command + 8, "%d", &milliVolts) == 1) {
+            // Validate the parsed value is within the expected range
+            if (milliVolts >= 0 && milliVolts <= 5000) {
+                // Set the PWM voltage
+                pwm.setPwmVoltage(milliVolts);
+
+                for (int i = 0; i < 10; i++) {
+
+                // Read ADC value and convert to voltage
+                uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
+                // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
+                float voltage = adcValue * 5.0 / 1024.0; // TEST
+
+                // Manually convert the voltage to a string
+                int voltage_int = static_cast<int>(voltage);
+                int voltage_frac = static_cast<int>((voltage - voltage_int) * 100);
+
+                char buffer[128];
+                snprintf(buffer, sizeof(buffer), 
+                        "PWM Output Voltage: %dmV, ADC Input Voltage: %d.%02dV\r\n", 
+                        milliVolts, voltage_int, voltage_frac
+                        );
+                serial.print(buffer);
+
+                _delay_ms(100);
+            }
+
+            } else {
+                serial.print("Invalid milliVolts, must be between 0mV and 5000mV\r\n");
+            }
+        } else {
+            serial.print("Parsing error: Could not interpret the PWM voltage\r\n");
+        }
+    }
+
+    if (strcmp(command, "pwm adc auto") == 0) {
+        // auto-adjust PWM output based on ADC input
+    }
+
 }
 
 void CommandParser::parseButtonCommand(const char* command) {
@@ -198,4 +252,5 @@ void CommandParser::printHelp() {
 void CommandParser::printError(const char* message) {
     serial.print("Error: ");
     serial.print(message);
+    serial.print("\r\n");
 }
