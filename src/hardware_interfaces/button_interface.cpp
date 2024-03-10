@@ -44,10 +44,9 @@ ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface)
         BUTTONS_PORT |= (1 << buttonBits[i]);
     }
 
-	// Enable pin change interrupt for PCINT0 Group (D8-D13)
-    PCICR |= (1 << PCIE0);
-    PCMSK0 |= (1 << PCINT1) | (1 << PCINT2) | (1 << PCINT3);
-    /* Global Interupts must be enabled in main.cpp with sei() */
+	// Enable pin change interrupt for buttons
+    PCICR |= (1 << BUTTONS_PCICR_ENABLE_BIT);
+    BUTTONS_PCMSK_REGISTER |= BUTTONS_PCMSK_ENABLE_BITS;
 
 	// Static instance for static methods to access non-static methods
     instance = this;

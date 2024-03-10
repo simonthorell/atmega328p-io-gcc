@@ -2,7 +2,6 @@
 // Command Parser Class Implementation
 //==============================================================================
 #include "data_transmission/command_parser.h"
-#include "hardware_interfaces/adc_interface.h"
 #include <util/delay.h>
 #include <string.h>
 #include <stdio.h>

@@ -30,6 +30,11 @@
 #define BUTTON_2_BIT    PORTB2  // Arduino Digital Pin 10
 #define BUTTON_3_BIT    PORTB3  // Arduino Digital Pin 11
 
+// Pin Change Interrupt Enable and Mask settings for PCINT0 Group (D8-D13)
+#define BUTTONS_PCICR_ENABLE_BIT  PCIE0  // Enable bit for PCINT0-7
+#define BUTTONS_PCMSK_REGISTER    PCMSK0 // Pin change mask register for PCINT0-7
+#define BUTTONS_PCMSK_ENABLE_BITS ((1 << PCINT1) | (1 << PCINT2) | (1 << PCINT3)) // D9, D10, D11
+
 // Button Pin Change Interrupt (PIC) vector (D8-D13)
 #define BUTTON_ISR_VECT PCINT0_vect
 
@@ -44,14 +49,8 @@ typedef enum {
 // Potentiometer ADC Channel
 #define POT_ADC_CHANNEL 0 // Arduino Analog Pin ADC0
 
-// PWM to ADC Channel (Use PWM from PIN D3 by disable LED on Pin D5)
+// PWM to ADC Channel
 #define PWM_ADC_CHANNEL 1 // Arduino Analog Pin ADC1
-
-// PWM to ADC - ON/OFF Switch (control base of transistor)
-#define PWM_ADC_SWITCH_DDR  DDRD
-#define PWM_ADC_SWITCH_PORT PORTD
-#define PWM_ADC_SWITCH_PIN  PIND
-#define PWM_ADC_SWITCH_BIT  PORTD4 // Arduino Digital Pin 4
 
 //======================================================================
 // PWM Definitions
