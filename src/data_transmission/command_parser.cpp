@@ -13,7 +13,7 @@
 CommandParser::CommandParser(USART& serial, LEDInterface& led, 
                              ButtonInterface& button, ADCInterface& adc,
                              PWMInterface& pwm) 
-    : serial(serial), led(led), button(button), adc(adc), pwm(pwm) 
+    : serial(serial), led(led), button(button), adc(adc), pwm(pwm)
 {
 }
 
@@ -76,13 +76,13 @@ void CommandParser::parsePwmCommand(const char* command) {
             uint8_t dutyCycle = static_cast<uint8_t>(
                 map(adcValue, 0, 1023, 0, 255));
 
-            // Set PWM duty cycle according to ADC value
             pwm.setDutyCycle(dutyCycle);
 
             _delay_ms(30); // Short delay to debounce/read rate control
 
+            // Exit the loop when pot is turned to 0
             if (adcValue == 0) {
-                break; // Exit the loop when pot is turned to 0
+                break; 
             }
         }
     }
@@ -109,30 +109,31 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
+    // Set PWM output and read ADC input
     if (strncmp(command, "pwm adc ", 8) == 0) {
-    int milliVolts;
+    uint16_t milliVolts;
 
         // Attempt to parse the millivolts value from the command
         if (sscanf(command + 8, "%d", &milliVolts) == 1) {
+
             // Validate the parsed value is within the expected range
             if (milliVolts >= 0 && milliVolts <= 5000) {
-                // Set the PWM voltage
-                pwm.setPwmVoltage(milliVolts);
 
-                // Read ADC value and convert to milliVolt
-                for (int i = 0; i < 10; i++) {
-                    // Read ADC value and convert to voltage
+                // Convert milliVolts to duty cycle & set PWM output
+                uint8_t dutyCycle = static_cast<uint8_t>(
+                    map(milliVolts, 0, 5000, 0, 255));
+
+                pwm.setDutyCycle(dutyCycle);
+
+                // Loop to read ADC value every second and convert to milliVolt
+                for (uint8_t i = 0; i < 10; i++) {
                     uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
-                    // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
-                    float voltage = adcValue * 5000.0 / 1024.0; // Convert to 
-
-                    // Manually convert the voltage to a string
-                    int voltage_int = static_cast<int>(voltage);
+                    uint16_t adcVoltage = map(adcValue, 0, 1023, 0, 5000);
 
                     char buffer[128];
                     snprintf(buffer, sizeof(buffer), 
                             "PWM Set Output: %dmV, ADC Read Input: %dmV\r\n", 
-                            milliVolts, voltage_int
+                            milliVolts, adcVoltage
                             );
                     serial.print(buffer);
 
@@ -147,44 +148,43 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
-    // TODO: Cleanup this...
+    // Set PWM output, lower it by 10% and auto-adjust the PWM voltage using ADC input
     if (strncmp(command, "pwm auto adc ", 13) == 0) {
-        PwmAdcConverter pwmAdcConverter(adc, pwm);
-        int milliVolts;
+        // TODO: Initialize in constructor
+        // PwmAdcConverter pwmAdcConverter(adc, pwm);
+        uint16_t milliVolts;
 
         // Attempt to parse the millivolts value from the command
         if (sscanf(command + 13, "%d", &milliVolts) == 1) {
-            // Validate the parsed value is within the expected range
-            if (milliVolts >= 0 && milliVolts <= 4500) {
+            if (milliVolts >= 0 && milliVolts <= 5000) {
 
-                // Lower the threshold for auto-adjustment
-                uint16_t newMilliVolts = milliVolts * 0.9;
+                // Lower the voltage by 10%
+                uint16_t adjustedMilliVolts = milliVolts * 0.9;
 
-                // Set the PWM voltage
-                pwm.setPwmVoltage(newMilliVolts);
+                // Convert milliVolts to duty cycle & set PWM output
+                uint8_t dutyCycle = static_cast<uint8_t>(
+                    map(adjustedMilliVolts, 0, 5000, 0, 255));
+
+                // Set PWM 10% lower than the desired milliVolts
+                pwm.setDutyCycle(dutyCycle);
 
                 // Read ADC value and convert to milliVolt
-                for (int i = 0; i < 10; i++) {
-                    // Read ADC value and convert to voltage
+                for (int i = 0; i < 30; i++) {
+                    _delay_ms(500); // // Allow time for PWM adjustment
+
                     uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
+                    uint16_t adcVoltage = map(adcValue, 0, 1023, 0, 5000);
 
-                    // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
-                    float voltage = adcValue * 5000.0 / 1024.0; // Convert to mV
-
-                    // Manually convert the voltage to a string
-                    int voltage_int = static_cast<int>(voltage);
+                    // Calculate error between desired and actual milliVolts
+                    int error = milliVolts - adcVoltage;
+                    pwm.adjustDutyCycle(error);
 
                     char buffer[128];
                     snprintf(buffer, sizeof(buffer), 
-                            "PWM Set Output: %dmV, ADC Read Input: %dmV\r\n", 
-                            milliVolts, voltage_int
+                            "PWM Set: %dmV, PWM Adjust: %dmV, ADC Read: %dmV, Correction: %dmV\r\n", 
+                            milliVolts, adjustedMilliVolts, adcVoltage, error
                             );
                     serial.print(buffer);
-
-                    // Auto-adjust the PWM voltage
-                    pwmAdcConverter.autoAdjustPwm(milliVolts);
-
-                    _delay_ms(1000); // Wait 1 second until next reading
                 }
 
             } else {
@@ -250,10 +250,12 @@ void CommandParser::parseButtonCommand(const char* command) {
 void CommandParser::parseAdcCommand(const char* command) {
     if (strcmp(command, "adc read pot") == 0) {
         char buffer[128];
+
         while (1) {
             // Read ADC value and convert to voltage
             uint16_t adcValue = adc.readADC(POT_ADC_CHANNEL);
-            float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
+            float voltage = adcValue * 5.0 / 1023.0; // Convert to voltage
+
 
             // Manually convert the voltage to a string
             int voltage_int = static_cast<int>(voltage);
@@ -265,7 +267,8 @@ void CommandParser::parseAdcCommand(const char* command) {
                     );
             serial.print(buffer);
 
-            _delay_ms(300); // Wait for 300 milliseconds
+            // Wait for 300 milliseconds before next reading
+            _delay_ms(300);
 
             // Exit when pot is turned to 0
             if (voltage == 0) {

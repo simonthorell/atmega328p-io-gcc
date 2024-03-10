@@ -11,7 +11,10 @@ public:
 
     // Set the duty cycle of the PWM signal
     void setDutyCycle(uint8_t duty);
-    void setPwmVoltage(uint16_t milliVolts);
+    void adjustDutyCycle(int error);
+
+private:
+    uint8_t dutyCycle;
 };
 
 #endif // PWM_INTERFACE_H

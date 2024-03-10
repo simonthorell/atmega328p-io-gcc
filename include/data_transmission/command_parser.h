@@ -10,7 +10,6 @@
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
 #include "hardware_interfaces/pwm_interface.h"
-#include "signal_processing/pwm_adc_converter.h"
 
 class CommandParser {
 public:
