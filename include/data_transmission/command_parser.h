@@ -4,17 +4,13 @@
 #include <stdint.h>
 #include <string.h>
 
-// Data in PROGMEM
-#include "data.h"
-
-// Data Transmission Interfaces
+#include "data.h" // Data in PROGMEM
 #include "data_transmission/usart.h" // Serial Communication
-
-// Hardware Abstraction Layers (Interfaces)
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
 #include "hardware_interfaces/pwm_interface.h"
+#include "signal_processing/pwm_adc_converter.h"
 
 class CommandParser {
 public:

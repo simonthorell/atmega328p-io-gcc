@@ -14,11 +14,10 @@ public:
     // Constructor
     Timer(TimerType type);
 
-    // Public Methods
-    void init();
-
 private:
     TimerType timerType;
+
+    void init();
 };
 
 #endif // TIMER_H

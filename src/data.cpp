@@ -26,12 +26,14 @@ const char cmd10[] PROGMEM = "button state (Prints 8-bit state for 35 button pre
 const char cmd11[] PROGMEM = "adc read pot (Print POT value from ADC0 - turn to 0 to exit)";
 const char cmd12[] PROGMEM = "pwm led pot (POT to adjust LED brightness - turn to 0 to exit)";
 const char cmd13[] PROGMEM = "pwm led [0-10] (Set LED brightness between 0 and 10)";
-const char cmd14[] PROGMEM = "help";
+const char cmd14[] PROGMEM = "pwm adc [0-5000] (Set PWM output and read ADC value in mV)";
+const char cmd15[] PROGMEM = "pwm auto adc [0-4500] (Autoadjusts PWM based on ADC input)";
+const char cmd16[] PROGMEM = "help (Prints all available commands)";
 
 // Array of pointers to the command strings
 const char* const commandStrings[] PROGMEM = {cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, 
                                               cmd7, cmd8, cmd9, cmd10, cmd11,
-                                              cmd12, cmd13, cmd14};
+                                              cmd12, cmd13, cmd14, cmd15, cmd16};
 
 //==============================================================================
 // Constructor

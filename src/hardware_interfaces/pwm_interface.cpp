@@ -48,15 +48,3 @@ void PWMInterface::setPwmVoltage(uint16_t milliVolts) {
         setDutyCycle(static_cast<int>(dutyCycle));
     }
 }
-
-void PWMInterface::enablePwmToAdc() {
-    // Send current to transistor base to enable PWM to ADC route
-    PWM_ADC_SWITCH_DDR |= (1 << PWM_ADC_SWITCH_BIT);
-    PWM_ADC_SWITCH_PORT |= (1 << PWM_ADC_SWITCH_BIT);
-}
-
-void PWMInterface::disablePwmToAdc() {
-    // Turn off current to transistor base to disable PWM to ADC route
-    PWM_ADC_SWITCH_DDR |= (1 << PWM_ADC_SWITCH_BIT);
-    PWM_ADC_SWITCH_PORT &= ~(1 << PWM_ADC_SWITCH_BIT);
-}

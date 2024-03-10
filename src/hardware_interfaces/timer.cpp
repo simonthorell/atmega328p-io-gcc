@@ -8,8 +8,7 @@
 // Constructor
 //==============================================================================
 Timer::Timer(TimerType type) : timerType(type) {
-    // Why is it/would be good practise to have init() methods in embedded ???
-    // Instead of just initializing in constructor (if using c++) ???
+    init();
 }
 
 //==============================================================================
@@ -17,7 +16,6 @@ Timer::Timer(TimerType type) : timerType(type) {
 // Description:    Initializes the timer based on the timer type
 //==============================================================================
 void Timer::init() {
-    // Move code to constructor ??? Would make more sense...
     switch (timerType) {
         case TIMER0:
             // TODO: Add setup code if timer 0 is needed later...

@@ -25,7 +25,6 @@ int main(void) {
 
     // Initialize timers
     Timer timer2(Timer::TIMER2);  // Timer2 = 8-bit Timer
-    timer2.init();                // Use for button timer interupt and PWM
 
     // Init UART with default baud rate (serial print/read)
     USART serial; 

@@ -13,7 +13,9 @@
 CommandParser::CommandParser(USART& serial, LEDInterface& led, 
                              ButtonInterface& button, ADCInterface& adc,
                              PWMInterface& pwm) 
-    : serial(serial), led(led), button(button), adc(adc), pwm(pwm) {}
+    : serial(serial), led(led), button(button), adc(adc), pwm(pwm) 
+{
+}
 
 //==============================================================================
 // Public Methods: parseCommand
@@ -107,16 +109,6 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
-    if (strcmp(command, "pwm enable adc") == 0) {
-        // Switch on transistor 'PWM => ADC' route
-        pwm.enablePwmToAdc();
-    }
-
-    if (strcmp(command, "pwm disable adc") == 0) {
-        // Switch off transistor 'PWM => ADC' route
-        pwm.disablePwmToAdc();
-    }
-
     if (strncmp(command, "pwm adc ", 8) == 0) {
     int milliVolts;
 
@@ -127,26 +119,25 @@ void CommandParser::parsePwmCommand(const char* command) {
                 // Set the PWM voltage
                 pwm.setPwmVoltage(milliVolts);
 
+                // Read ADC value and convert to milliVolt
                 for (int i = 0; i < 10; i++) {
+                    // Read ADC value and convert to voltage
+                    uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
+                    // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
+                    float voltage = adcValue * 5000.0 / 1024.0; // Convert to 
 
-                // Read ADC value and convert to voltage
-                uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
-                // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
-                float voltage = adcValue * 5.0 / 1024.0; // TEST
+                    // Manually convert the voltage to a string
+                    int voltage_int = static_cast<int>(voltage);
 
-                // Manually convert the voltage to a string
-                int voltage_int = static_cast<int>(voltage);
-                int voltage_frac = static_cast<int>((voltage - voltage_int) * 100);
+                    char buffer[128];
+                    snprintf(buffer, sizeof(buffer), 
+                            "PWM Set Output: %dmV, ADC Read Input: %dmV\r\n", 
+                            milliVolts, voltage_int
+                            );
+                    serial.print(buffer);
 
-                char buffer[128];
-                snprintf(buffer, sizeof(buffer), 
-                        "PWM Output Voltage: %dmV, ADC Input Voltage: %d.%02dV\r\n", 
-                        milliVolts, voltage_int, voltage_frac
-                        );
-                serial.print(buffer);
-
-                _delay_ms(100);
-            }
+                    _delay_ms(1000); // Wait 1 second until next reading
+                }
 
             } else {
                 serial.print("Invalid milliVolts, must be between 0mV and 5000mV\r\n");
@@ -156,8 +147,52 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
-    if (strcmp(command, "pwm adc auto") == 0) {
-        // auto-adjust PWM output based on ADC input
+    // TODO: Cleanup this...
+    if (strncmp(command, "pwm auto adc ", 13) == 0) {
+        PwmAdcConverter pwmAdcConverter(adc, pwm);
+        int milliVolts;
+
+        // Attempt to parse the millivolts value from the command
+        if (sscanf(command + 13, "%d", &milliVolts) == 1) {
+            // Validate the parsed value is within the expected range
+            if (milliVolts >= 0 && milliVolts <= 4500) {
+
+                // Lower the threshold for auto-adjustment
+                uint16_t newMilliVolts = milliVolts * 0.9;
+
+                // Set the PWM voltage
+                pwm.setPwmVoltage(newMilliVolts);
+
+                // Read ADC value and convert to milliVolt
+                for (int i = 0; i < 10; i++) {
+                    // Read ADC value and convert to voltage
+                    uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
+
+                    // float voltage = adcValue * 5.0 / 1024.0; // Convert to voltage
+                    float voltage = adcValue * 5000.0 / 1024.0; // Convert to mV
+
+                    // Manually convert the voltage to a string
+                    int voltage_int = static_cast<int>(voltage);
+
+                    char buffer[128];
+                    snprintf(buffer, sizeof(buffer), 
+                            "PWM Set Output: %dmV, ADC Read Input: %dmV\r\n", 
+                            milliVolts, voltage_int
+                            );
+                    serial.print(buffer);
+
+                    // Auto-adjust the PWM voltage
+                    pwmAdcConverter.autoAdjustPwm(milliVolts);
+
+                    _delay_ms(1000); // Wait 1 second until next reading
+                }
+
+            } else {
+                serial.print("Invalid milliVolts, must be between 0mV and 5000mV\r\n");
+            }
+        } else {
+            serial.print("Parsing error: Could not interpret the PWM voltage\r\n");
+        }
     }
 
 }
@@ -204,7 +239,7 @@ void CommandParser::parseButtonCommand(const char* command) {
 
                 // Exit loop after 50 button press changes
                 if (pressCounter == 0) {
-                    return; // Exit if condition met
+                    return;
                 }
             }
         }
@@ -232,8 +267,8 @@ void CommandParser::parseAdcCommand(const char* command) {
 
             _delay_ms(300); // Wait for 300 milliseconds
 
+            // Exit when pot is turned to 0
             if (voltage == 0) {
-                // Exit when pot is turned to 0V
                 return;
             }
         }
