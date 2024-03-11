@@ -6,6 +6,8 @@
 #define TIMER_DEBOUNCE_BITMASK 0b00011111 // 5 consecutive reads = press
 #define PCI_DEBOUNCE_BITMASK   0b00000001 // only need high/low = press
 
+volatile unsigned long lastPressTime = 0;
+
 const unsigned char ButtonInterface::buttonBits[BUTTONS_COUNT] = {
     BUTTON_1_BIT, BUTTON_2_BIT, BUTTON_3_BIT // Mapped in mcu_mapping.h
 };
@@ -26,10 +28,26 @@ ISR(TIMER2_OVF_vect) {
 }
 
 // Option 2: Use pin change interrupt to check button states and debounce
+#define PCI_DEBOUNCE_TIME 10 // 10ms debounce time for PCI
+
+ISR(TIMER1_OVF_vect) {
+    // This ISR will be called every 1ms (millis())
+    TCNT1 = 0xFF06; // Reload timer
+}
+
 ISR(BUTTON_ISR_VECT) {
 	if (ButtonInterface::instance != nullptr && 
         ButtonInterface::instance->interuptType == PIN_CHANGE_INTERUPT) {
-        ButtonInterface::instance->updateButtonStates();
+
+        unsigned long currentTime = TCNT1; // Read current Timer 1 value
+
+        // Handle button press if debounce time has passed
+        if ((currentTime - lastPressTime) > PCI_DEBOUNCE_TIME) {
+            ButtonInterface::instance->updateButtonStates();
+            lastPressTime = currentTime; // Update lastPressTime
+
+            // Clear button states
+        }
     }
 }
 
