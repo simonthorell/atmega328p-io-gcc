@@ -6,12 +6,12 @@
 
 #include "data.h" // Data in PROGMEM
 #include "data_transmission/usart.h" // Serial Communication
-#include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
 #include "hardware_interfaces/pwm_interface.h"
 
 // Friend Classes
 #include "command_parser/led_command.h"
+#include "command_parser/button_command.h"
 
 class CommandParser {
 public:
@@ -39,7 +39,6 @@ protected:
     // Break these out as child classes (more submethods needed for each)
     // void parseLedCommand(const char* command);
     void parsePwmCommand(const char* command);
-    void parseButtonCommand(const char* command);
     void parseAdcCommand(const char* command);
     void printHelp();
     void printError(const char* message);

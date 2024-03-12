@@ -26,7 +26,7 @@ void CommandParser::parseCommand(const char* command) {
         LEDCommand(led).execute(command);
     }
     else if (strncmp(command, "button", 6) == 0) {
-        this->parseButtonCommand(command);
+        ButtonCommand(serial, button).execute(command);
     }
     else if (strncmp(command, "adc", 3) == 0) {
         this->parseAdcCommand(command);
@@ -42,9 +42,7 @@ void CommandParser::parseCommand(const char* command) {
 }
 
 //==============================================================================
-// Private Methods: parseLedCommand, parsePwmCommand, parseButtonCommand, 
-//                  parsePotentiometerCommand
-// Description:     Parses and executes the corresponding UART-command.
+// TODO: MOVE EACH PART TO FRIEND CLASSES
 //==============================================================================
 void CommandParser::parsePwmCommand(const char* command) {
     // Continuously adjust LED brightness based on potentiometer value
@@ -176,56 +174,6 @@ void CommandParser::parsePwmCommand(const char* command) {
         }
     }
 
-}
-
-void CommandParser::parseButtonCommand(const char* command) {
-    if (strcmp(command, "button timer interupt") == 0) {
-        button.setInterruptType(TIMER_2_INTERUPT);
-    }
-
-    if (strcmp(command, "button pci interupt") == 0) {
-        button.setInterruptType(PIN_CHANGE_INTERUPT);
-    }
-
-    if (strcmp(command, "button state") == 0) {
-        unsigned char lastPrintedStates[BUTTONS_COUNT] = {0};
-
-        // Set loop cancel condition at 35 presses/bounces
-        uint8_t pressCounter = 35;
-
-        while(1) {
-        for (int i = 0; i < BUTTONS_COUNT; ++i) {
-            if (button.buttonStates[i] != lastPrintedStates[i]) {
-                // Update state and prepare for printing
-                lastPrintedStates[i] = button.buttonStates[i];
-
-                // Buffer for printing button index
-                char indexBuffer[20];
-                snprintf(indexBuffer, sizeof(indexBuffer), "Button %d State: ", i);
-
-                // Binary state representation buffer
-                char bitString[9]; // 8 bits + null terminator
-                unsigned char state = button.buttonStates[i];
-                for (int bit = 7; bit >= 0; --bit) {
-                    bitString[7 - bit] = (state & (1 << bit)) ? '1' : '0';
-                }
-                bitString[8] = '\0'; // Ensure null-termination
-
-                // Print button state
-                serial.print(indexBuffer);
-                serial.print(bitString);
-                serial.print("\n");
-
-                pressCounter--;
-
-                // Exit loop after 50 button press changes
-                if (pressCounter == 0) {
-                    return;
-                }
-            }
-        }
-    }
-    }
 }
 
 void CommandParser::parseAdcCommand(const char* command) {
