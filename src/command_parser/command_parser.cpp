@@ -1,7 +1,7 @@
 //==============================================================================
 // Command Parser Class Implementation
 //==============================================================================
-#include "data_transmission/command_parser.h"
+#include "command_parser/command_parser.h"
 #include <util/delay.h>
 #include <string.h>
 #include <stdio.h>

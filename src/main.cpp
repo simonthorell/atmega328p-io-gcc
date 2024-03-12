@@ -5,8 +5,8 @@
 #include <avr/interrupt.h> // AVR Interrupts
 
 // Include Application Header-files
+#include "command_parser/command_parser.h"
 #include "data_transmission/usart.h"
-#include "data_transmission/command_parser.h"
 #include "hardware_interfaces/timer.h"
 #include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
