@@ -6,10 +6,12 @@
 
 #include "data.h" // Data in PROGMEM
 #include "data_transmission/usart.h" // Serial Communication
-#include "hardware_interfaces/led_interface.h"
 #include "hardware_interfaces/button_interface.h"
 #include "hardware_interfaces/adc_interface.h"
 #include "hardware_interfaces/pwm_interface.h"
+
+// Friend Classes
+#include "command_parser/led_command.h"
 
 class CommandParser {
 public:
@@ -24,7 +26,7 @@ public:
     // Public Methods
     void parseCommand(const char* command);
 
-private:
+protected:
     // USART Interface Object
     USART& serial;
 
@@ -34,8 +36,8 @@ private:
     ADCInterface& adc;
     PWMInterface& pwm;
 
-    // Private Methods
-    void parseLedCommand(const char* command);
+    // Break these out as child classes (more submethods needed for each)
+    // void parseLedCommand(const char* command);
     void parsePwmCommand(const char* command);
     void parseButtonCommand(const char* command);
     void parseAdcCommand(const char* command);

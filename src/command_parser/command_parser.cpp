@@ -23,7 +23,7 @@ CommandParser::CommandParser(USART& serial, LEDInterface& led,
 //==============================================================================
 void CommandParser::parseCommand(const char* command) {
     if (strncmp(command, "led", 3) == 0) {
-        this->parseLedCommand(command);
+        LEDCommand(led).execute(command);
     }
     else if (strncmp(command, "button", 6) == 0) {
         this->parseButtonCommand(command);
@@ -46,24 +46,6 @@ void CommandParser::parseCommand(const char* command) {
 //                  parsePotentiometerCommand
 // Description:     Parses and executes the corresponding UART-command.
 //==============================================================================
-void CommandParser::parseLedCommand(const char* command) {
-    if (strcmp(command, "led green on") == 0) {
-        led.greenOn();
-    } else if (strcmp(command, "led green off") == 0) {
-        led.greenOff();
-    } else if (strcmp(command, "led red on") == 0) {
-        led.redOn();
-    } else if (strcmp(command, "led red off") == 0) {
-        led.redOff();
-    } else if (strcmp(command, "led blue on") == 0) {
-        led.blueOn();
-    } else if (strcmp(command, "led blue off") == 0) {
-        led.blueOff();
-    } else if (strcmp(command, "led lightshow") == 0) {
-        led.lightShow();
-    }
-}
-
 void CommandParser::parsePwmCommand(const char* command) {
     // Continuously adjust LED brightness based on potentiometer value
     if (strcmp(command, "pwm led pot") == 0) {
