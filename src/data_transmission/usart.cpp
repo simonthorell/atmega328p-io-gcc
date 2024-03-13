@@ -1,18 +1,24 @@
+//======================================================================
 // USART Class Implementation
-#include "usart.h"
+//======================================================================
+#include "data_transmission/usart.h"
 #include <util/delay.h>
 
+//======================================================================
 // Constructor
-USART::USART() {}
-
-// Initializes USART with given baud rate
-void USART::init(unsigned int ubrr) {
+//======================================================================
+USART::USART(unsigned int ubrr) {
     UBRR0H = (unsigned char)(ubrr >> 8); // Set high byte of baud rate
     UBRR0L = (unsigned char)ubrr;        // Set low byte of baud rate
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);    // Enable receiver and transmitter
-    UCSR0C = (1<<USBS0) | (3<<UCSZ00);   // Set frame format: 8 data bits, 2 stop bits
+    // Enable receiver and transmitter
+    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+    // Set frame format: 8 data bits, 2 stop bits
+    UCSR0C = (1<<USBS0) | (3<<UCSZ00);
 }
 
+//======================================================================
+// Public Methods: transmit, receive, print, receiveString
+//======================================================================
 // Transmits a single character
 void USART::transmit(unsigned char data) {
     while (!(UCSR0A & (1<<UDRE0))); // Wait for empty transmit buffer

@@ -2,6 +2,16 @@
 
 This is a template setup of a virtual development container for AVR microcontroller projects, using avr-gcc for compilation. It includes a suite of scripts designed to streamline the processes of flashing firmware to the microcontroller and monitoring its serial output.
 
+
+## LED Resistor Calculations
+Green Measure 12.5mA using 5V and 150Ohm Resistor
+Green Measure 12.3mA using 5V and 220Ohm Resistor
+Blue Measure  5.5mA  using 5V and 470Ohm Resistor (still looks brighter)
+
+## RC-Filter Components (PWM to ADC)
+47kOhm Resistor
+10uF (20V) Capacitor
+
 ## Prerequisites
 Before using this template, ensure you have the following software installed on your system:
 

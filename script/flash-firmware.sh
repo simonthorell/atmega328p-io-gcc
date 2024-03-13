@@ -1,23 +1,5 @@
 #!/bin/bash
 
-# Flash AVR Microcontroller Firmware Script
-#
-# This script facilitates flashing firmware to an AVR microcontroller using avrdude.
-# It optionally accepts a serial port argument to specify the target microcontroller's connection.
-# If no serial port is provided, the default port (/dev/cu.usbserial-110) is used.
-#
-# Requirements:
-# - avrdude must be installed on your system.
-#
-# Usage:
-# - To flash firmware using a specified serial port:
-#     './flash_microcontroller.sh -p /dev/cu.usbserial-110'
-# - To flash firmware using the default serial port:
-#     './flash_microcontroller.sh'
-#
-# Note: Ensure the correct permissions are set to execute this script.
-#       Run 'chmod +x ./flash-firmware.sh' to add execute permissions.
-
 # Define the default serial port to which the microcontroller is connected.
 SERIAL_PORT=/dev/cu.usbserial-110
 

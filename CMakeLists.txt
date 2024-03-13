@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.22.2)
 # Project name
 project("avr-firmware")
 
+# TODO: Remove unnecessary flashing code as docker does not have access to USB ports
+# Use remote options instead to flash the firmware to the microcontroller
+
 # AVR Chip Configuration
 set(F_CPU 16000000UL)      # Clock frequency
 set(MCU atmega328p)        # Microcontroller unit
@@ -30,7 +33,7 @@ set(CMAKE_EXE_LINKER_FLAGS "-mmcu=${MCU}")
 add_compile_options(
     -mmcu=${MCU} # specify MCU model
     -Os          # optimize size
-    -std=c++11   # C++ standard
+    -std=c++17   # C++ standard
     -Wall        # enable warnings
     -Wextra
     -Wundef
@@ -38,8 +41,8 @@ add_compile_options(
 )
 
 # Source and include files
-file(GLOB SRC_FILES CMAKE_CONFIGURE_DEPENDS "src/*.cpp")
-file(GLOB INC_FILES CMAKE_CONFIGURE_DEPENDS "libs/*.cpp")
+file(GLOB_RECURSE SRC_FILES CMAKE_CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE INC_FILES CMAKE_CONFIGURE_DEPENDS "libs/*.cpp")
 
 # Executable target
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${INC_FILES})
