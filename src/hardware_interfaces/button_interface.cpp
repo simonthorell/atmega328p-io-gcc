@@ -3,6 +3,10 @@
 //======================================================================
 #include "hardware_interfaces/button_interface.h"
 
+//**********************************************************************
+// TODO: Cleanup and refactor this file  /STH 2024-03-13
+//**********************************************************************
+
 #define TIMER_DEBOUNCE_BITMASK 0b00011111 // 5 consecutive reads = press
 #define PCI_DEBOUNCE_BITMASK   0b00000001 // only need high/low = press
 
