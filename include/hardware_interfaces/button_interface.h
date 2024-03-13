@@ -29,31 +29,31 @@ public:
     // Static instance for static methods to access non-static methods
     static ButtonInterface* instance;
 
-    // Variable to set interupt type & debounce bitMask
+    // Public Variables
+    static volatile unsigned char buttonStates[BUTTONS_COUNT];
+    static volatile bool actionTriggered;
     ButtonInteruptType interuptType;
-    unsigned char debounceBitMask;
 
-    // Public Setters
+    // Public Setter Methods
     void setInterruptType(ButtonInteruptType type);
 
-    // Static method to update button states in the ISR
-    static void updateButtonStates();
-
-    // Make public to allow serial debugging of button states
-    static volatile unsigned char buttonStates[BUTTONS_COUNT];
-    static volatile unsigned char lastButtonStates[BUTTONS_COUNT];
+    // Static methods to update button states in the ISR
+    static void updateButtonStatesOnTimerOverflow();
+    static void updateButtonStatesOnPinChange(unsigned long currentTime);
 
 private:
     // Reference to LEDInterface for controlling LEDs
     LEDInterface& LED;
 
-    // Define static variables for button states and debouncing
+    // Array for the button register bits
     static const unsigned char buttonBits[BUTTONS_COUNT];
 
-    // Private methods to read and handle button actions
+    // Private methods
     bool readButton(unsigned char buttonBit);
-    ButtonStatus buttonDebounce(unsigned char btn);
+    void setButtonState(int buttonIndex);
+    void resetButtonStates();
     void handleButtonAction(int buttonIndex);
+    ButtonStatus buttonDebounce(unsigned char btn);
 
 };
 
