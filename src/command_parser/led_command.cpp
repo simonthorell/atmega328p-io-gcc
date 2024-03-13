@@ -4,7 +4,7 @@
 #include "command_parser/led_command.h"
 
 //=============================================================================
-// Public Methods: execute()
+// Public Methods: execute
 // Description: Execute the LED command using the LED Hardware Interface.
 // Restriction: Accessible in CommandParser Class Only
 //=============================================================================

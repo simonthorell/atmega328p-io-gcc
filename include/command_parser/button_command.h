@@ -22,6 +22,9 @@ public:
 private:
     USART& serial;
     ButtonInterface& button;
+
+    // Private Methods
+    void printButtonState(ButtonInterface& button);
 };
 
 #endif // BUTTON_COMMAND_H

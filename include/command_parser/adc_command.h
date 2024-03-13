@@ -20,6 +20,9 @@ public:
 private:
     USART& serial;
     ADCInterface& adc;
+
+    // Private Methods
+    void ReadPOTValue();
 };
 
 #endif // ADC_COMMAND_H

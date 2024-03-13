@@ -21,9 +21,18 @@ public:
     void execute(const char* command);
 
 private:
+    // Hardware Interface Objects
     USART& serial;
     ADCInterface& adc;
     PWMInterface& pwm;
+
+    // Private Methods
+    void potControlLED();
+    void commandControlLED(PWMInterface& pwm, const char* command);
+    void adcControlPwm(USART& serial, PWMInterface& pwm, 
+                       ADCInterface& adc, const char* command);
+    void adcAutoAdjustPwm(USART& serial, PWMInterface& pwm, 
+                          ADCInterface& adc, const char* command);
 
     // Convert input value and scale it to a new range (ADC to PWM cycle)
     long map(long x, long in_min, long in_max, long out_min, long out_max) {

@@ -1,5 +1,5 @@
 //==============================================================================
-// Command Parser Class Implementation
+// CommandParser Class Implementation
 //==============================================================================
 #include "command_parser/command_parser.h"
 #include <util/delay.h>
@@ -19,7 +19,7 @@ CommandParser::CommandParser(USART& serial, LEDInterface& led,
 //==============================================================================
 // Public Methods: parseCommand
 // Description:    Parses a command string received over UART and 
-//                 calls the appropriate command class to execute the command.
+//                 calls the appropriate friend class to execute the command.
 //==============================================================================
 void CommandParser::parseCommand(const char* command) {
     if (strncmp(command, "led", 3) == 0) {
