@@ -5,9 +5,13 @@
 #include <util/delay.h> // _delay_ms
 #include <string.h>     // strcmp, strncmp
 #include <stdio.h>      // snprintf
+#include <stdlib.h>     // abs
 
 // Macro to simulate a lower PWM voltage that should be auto-adjusted
 #define PWM_ADJUST_FACTOR 0.9 // 10% lower than the desired milliVolts
+#define ERROR_RANGE_MV 10     // ±10 mV error range for PWM auto-adjustment
+#define MIN_MILLIVOLTS 0      // Minimum milliVolts for PWM output
+#define MAX_MILLIVOLTS 5000   // Maximum milliVolts for PWM output
 
 //=============================================================================
 // Public Methods: execute
@@ -71,10 +75,10 @@ void PWMCommand::commandControlLED(PWMInterface& pwm, const char* command){
     uint8_t level;
 
     // Ensure the conversion succeeds
-    if (sscanf(command + 8, "%d", &level) == 1) { 
+    if (sscanf(command + 8, "%hhu", &level) == 1) { 
 
-        // Check if the level is within the valid range
-        if (level >= 0 && level <= 10) {
+        // Check if the level is within the valid range (0-10)
+        if (level <= 10) {
             uint8_t dutyCycle = static_cast<uint8_t>(
                 map(level, 0, 10, 0, 255));
 
@@ -94,13 +98,13 @@ void PWMCommand::commandControlLED(PWMInterface& pwm, const char* command){
 //=============================================================================
 void PWMCommand::adcControlPwm(USART& serial, PWMInterface& pwm, 
                                ADCInterface& adc, const char* command) {
-    uint16_t milliVolts;
+    int milliVolts;
 
     // Attempt to parse the millivolts value from the command
     if (sscanf(command + 8, "%d", &milliVolts) == 1) {
 
         // Validate the parsed value is within the expected range
-        if (milliVolts >= 0 && milliVolts <= 5000) {
+        if (milliVolts >= MIN_MILLIVOLTS && milliVolts <= MAX_MILLIVOLTS) {
 
             // Convert milliVolts to duty cycle & set PWM output
             uint8_t dutyCycle = static_cast<uint8_t>(
@@ -115,7 +119,7 @@ void PWMCommand::adcControlPwm(USART& serial, PWMInterface& pwm,
 
                 char buffer[128];
                 snprintf(buffer, sizeof(buffer), 
-                        "PWM Set Output: %dmV, ADC Read Input: %dmV\r\n", 
+                        "PWM Set Output: %dmV, ADC Read Input: %humV\r\n", 
                         milliVolts, adcVoltage
                         );
                 serial.print(buffer);
@@ -139,13 +143,13 @@ void PWMCommand::adcControlPwm(USART& serial, PWMInterface& pwm,
 //=============================================================================
 void PWMCommand::adcAutoAdjustPwm(USART& serial, PWMInterface& pwm, 
                                   ADCInterface& adc, const char* command) {
-    uint16_t milliVolts;
+    int milliVolts;
 
     // Attempt to parse the millivolts value from the command
     if (sscanf(command + 13, "%d", &milliVolts) == 1) {
-        if (milliVolts >= 0 && milliVolts <= 5000) {
+        if (milliVolts >= MIN_MILLIVOLTS && milliVolts <= MAX_MILLIVOLTS) {
 
-            // Lower the voltage by 10%
+            // Lower the voltage by PWM_ADJUST_FACTOR to simulate a voltage drop
             uint16_t adjustedMilliVolts = milliVolts * PWM_ADJUST_FACTOR;
 
             // Convert milliVolts to duty cycle & set PWM output
@@ -155,24 +159,40 @@ void PWMCommand::adcAutoAdjustPwm(USART& serial, PWMInterface& pwm,
             // Set PWM 10% lower than the desired milliVolts
             pwm.setDutyCycle(dutyCycle);
 
-            // Read ADC value and convert to milliVolt
-            for (int i = 0; i < 30; i++) {
-                _delay_ms(500); // // Allow time for PWM adjustment
+            bool isWithinRange = false;
+            uint16_t adcVoltage = 0;
+            // Loop to read ADC value and auto-adjust PWM until within range
+            while (!isWithinRange) {
+                _delay_ms(500); // Allow time for PWM adjustment
 
                 uint16_t adcValue = adc.readADC(PWM_ADC_CHANNEL);
-                uint16_t adcVoltage = map(adcValue, 0, 1023, 0, 5000);
+                adcVoltage = map(adcValue, 0, 1023, 0, 5000);
 
                 // Calculate error between desired and actual milliVolts
                 int error = milliVolts - adcVoltage;
-                pwm.adjustDutyCycle(error);
 
-                char buffer[128];
-                snprintf(buffer, sizeof(buffer), 
-                        "PWM Set: %dmV, PWM Adjust: %dmV, ADC Read: %dmV, Correction: %dmV\r\n", 
-                        milliVolts, adjustedMilliVolts, adcVoltage, error
-                        );
-                serial.print(buffer);
+                if (abs(error) <= ERROR_RANGE_MV) { // Exit loop if error is within ±10 mV
+                    isWithinRange = true;
+                } else {
+                    pwm.adjustDutyCycle(error);
+
+                    char buffer[128];
+                    snprintf(buffer, sizeof(buffer), 
+                            "PWM Set: %dmV, PWM Adjust: %dmV, ADC Read: %humV, Correction: %dmV\r\n", 
+                            milliVolts, adjustedMilliVolts, adcVoltage, error
+                            );
+                    serial.print(buffer);
+                }
             }
+
+            // Print the final adjusted milliVolts difference
+            serial.print("PWM Duty Cycle Adjustment Complete!\r\n");
+            char buffer[128];
+            snprintf(buffer, sizeof(buffer), 
+                    "Desired mV: %dmV, Initial mV: %humV, Final Adjusted mV: %humV, Difference: %dmV\r\n", 
+                    milliVolts, adjustedMilliVolts, adcVoltage, milliVolts - adcVoltage
+                    );
+            serial.print(buffer);
 
         } else {
             serial.print("Invalid milliVolts, must be between 0mV and 5000mV\r\n");
