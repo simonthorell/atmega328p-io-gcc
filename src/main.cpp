@@ -24,8 +24,8 @@ int main(void) {
     sei();
 
     // Initialize timers
-    Timer timer1(Timer::TIMER1);  // Timer1 = 16-bit Timer (PIC button interupt millis())
-    Timer timer2(Timer::TIMER2);  // Timer2 = 8-bit Timer  (Timer button interupt)
+    Timer timer1(Timer::TIMER1);  // 16-bit millis Timer (PCI button interupt)
+    Timer timer2(Timer::TIMER2);  // 8-bit Overflow Timer (Timer button interupt)
 
     // Init UART with default baud rate (serial print/read)
     USART serial; 

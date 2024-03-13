@@ -3,55 +3,64 @@
 //======================================================================
 #include "hardware_interfaces/button_interface.h"
 
-//**********************************************************************
-// TODO: Cleanup and refactor this file  /STH 2024-03-13
-//**********************************************************************
-
-#define TIMER_DEBOUNCE_BITMASK 0b00011111 // 5 consecutive reads = press
-#define PCI_DEBOUNCE_BITMASK   0b00000001 // only need high/low = press
-
-volatile unsigned long lastPressTime = 0;
-
+// Button MCU register bits (mapped in mcu_mapping.h)
 const unsigned char ButtonInterface::buttonBits[BUTTONS_COUNT] = {
-    BUTTON_1_BIT, BUTTON_2_BIT, BUTTON_3_BIT // Mapped in mcu_mapping.h
+    BUTTON_1_BIT, BUTTON_2_BIT, BUTTON_3_BIT
 };
 
 // Variable to hold 8-bit state of all buttons
 volatile unsigned char ButtonInterface::buttonStates[BUTTONS_COUNT] = {0};
-volatile unsigned char ButtonInterface::lastButtonStates[BUTTONS_COUNT] = {0};
+
+// Indicate if an action has been triggered (for 'button state' command)
+volatile bool ButtonInterface::actionTriggered = false;
 
 // Static instance for static ISR methods to access non-static methods
 ButtonInterface* ButtonInterface::instance = nullptr;
 
-// Option 1: Use timer for interrupt to check button states and debounce
+//**********************************************************************
+// Interupt Option 1: Timer 2 (8-bit) - Timer Overflow interupt.
+// Description:       This interupt is using a bit mask to debounce the
+//                    button that is checked against the button states
+//                    every time the timer 2 overflows. This ensures that
+//                    the button is stable for 5 consecutive reads before
+//                    the button press is registered.
+//**********************************************************************
+#define TIMER_DEBOUNCE_BITMASK 0b00011111 // 5 consecutive reads = press
+
+// This ISR will be called every time TIMER2_OVF_vect overflows
 ISR(TIMER2_OVF_vect) {
 	if (ButtonInterface::instance != nullptr && 
         ButtonInterface::instance->interuptType == TIMER_2_INTERUPT) {
-        ButtonInterface::instance->updateButtonStates();
+        
+        // Handle interupt (Will use button states for debouncing)
+        ButtonInterface::instance->updateButtonStatesOnTimerOverflow();
     }
 }
 
-// Option 2: Use pin change interrupt to check button states and debounce
-#define PCI_DEBOUNCE_TIME 10 // 10ms debounce time for PCI
+//**********************************************************************
+// Interupt Option 2: Timer 1 (16-bit) - PCI (Pin Change Interupt).
+// Description:       This interupt is using Timer 1 to debounce the
+//                    button by checking the if debounce time has passed
+//                    since the last button press. This method is not as
+//                    reliable as the Timer 2 interupt, but it is a good
+//                    alternative.
+//**********************************************************************
+#define PCI_DEBOUNCE_TIME 40 // ms debounce time for Pin Change Interupt
 
+volatile unsigned long lastPressTime = 0; // Last button press time
+
+// This ISR will be called every millisecond (millis timer)
 ISR(TIMER1_OVF_vect) {
-    // This ISR will be called every 1ms (millis())
     TCNT1 = 0xFF06; // Reload timer
 }
 
+// This ISR will be called on any pin change (button press)
 ISR(BUTTON_ISR_VECT) {
 	if (ButtonInterface::instance != nullptr && 
         ButtonInterface::instance->interuptType == PIN_CHANGE_INTERUPT) {
 
-        unsigned long currentTime = TCNT1; // Read current Timer 1 value
-
-        // Handle button press if debounce time has passed
-        if ((currentTime - lastPressTime) > PCI_DEBOUNCE_TIME) {
-            ButtonInterface::instance->updateButtonStates();
-            lastPressTime = currentTime; // Update lastPressTime
-
-            // Clear button states
-        }
+        // Handle interupt and pass current time for debounce logic
+        ButtonInterface::instance->updateButtonStatesOnPinChange(TCNT1);
     }
 }
 
@@ -73,59 +82,70 @@ ButtonInterface::ButtonInterface(LEDInterface& ledInterface) : LED(ledInterface)
 	// Static instance for static methods to access non-static methods
     instance = this;
 
-	// Set the default button interupt type & debounce bitMask
+	// Set the default button interupt type (Timer Overflow)
 	instance->interuptType = TIMER_2_INTERUPT;
-	instance->debounceBitMask = TIMER_DEBOUNCE_BITMASK;
 }
 
 //======================================================================
 // Public Method: setInterruptType()
-// Description:   Setter method to set the button interupt type & 
-//                corresponding debounce bitMask.
+// Description:   Setter method to set the button interupt type.
 //======================================================================
 void ButtonInterface::setInterruptType(ButtonInteruptType type) {
 	if (type == TIMER_2_INTERUPT) {
 		ButtonInterface::instance->interuptType = TIMER_2_INTERUPT;
-		ButtonInterface::instance->debounceBitMask = TIMER_DEBOUNCE_BITMASK;
 	} else if (type == PIN_CHANGE_INTERUPT) {
 		ButtonInterface::instance->interuptType = PIN_CHANGE_INTERUPT;
-		ButtonInterface::instance->debounceBitMask = PCI_DEBOUNCE_BITMASK;
+        lastPressTime = 0; // Reset last press time for new interupt type
 	}
+    // Reset the actionTriggered flag (used for the 'button state' command)
+    actionTriggered = false;
 }
 
 //======================================================================
-// Public Method: updateButtonStatesISR()
-// Description:   Static method that updates the button states in ISR
+// Public Methods: updateButtonStatesOnTimerOverflow, 
+//                 updateButtonStatesOnPinChange
+// Description:    Depending on what interupt type has been set using 
+//                 setInteruptType(), these static methods will be
+//                 called from the ISR to update the button states and
+//                 handle the button actions.
 //======================================================================
-void ButtonInterface::updateButtonStates() {
-    if (ButtonInterface::instance) {
-        for (int i = 0; i < BUTTONS_COUNT; ++i) {
-            // Shift the current state to left to make room for the new state
-            buttonStates[i] <<= 1;
+// Interupt Option 1: Timer 2 (8-bit) - Timer Overflow interupt
+void ButtonInterface::updateButtonStatesOnTimerOverflow() {
+    for (int i = 0; i < BUTTONS_COUNT; ++i) {
+        // Set the current state of the button
+        ButtonInterface::instance->setButtonState(i);
 
-            // Read the current button state and set the least significant bit
-            if (ButtonInterface::instance->readButton(buttonBits[i])) {
-                buttonStates[i] |= 0x01; // '1' bit for pressed state
-            }
-
-            // Debounce the current state
-            ButtonStatus currentState = 
-                ButtonInterface::instance->buttonDebounce(buttonStates[i]);
-
-            // Detect transitions to pressed state
-            bool buttonIsPressed =
-                currentState == BUTTON_PRESSED && 
-				// Check last state to avoid multiple actions/toggles
-                ButtonInterface::instance->lastButtonStates[i] != BUTTON_PRESSED;
-                
-            if (buttonIsPressed) {
-                ButtonInterface::instance->handleButtonAction(i);
-            }
-
-            // Update the last debounced state for the next cycle
-            ButtonInterface::instance->lastButtonStates[i] = currentState;
+        // Debounce the current state using bit mask comparison
+        ButtonStatus currentState = 
+            ButtonInterface::instance->buttonDebounce(buttonStates[i]);
+        
+        // Check if the button is pressed and that the state has changed
+        if (currentState == BUTTON_PRESSED && currentState != buttonStates[i]) {
+            ButtonInterface::instance->handleButtonAction(i);
         }
     }
+}
+
+// Interupt Option 2: Timer 1 (16-bit) - PCI (Pin Change Interupt)
+void ButtonInterface::updateButtonStatesOnPinChange(unsigned long currentTime) {
+    // Set the current state of the button (Only to print states to serial)
+    for (int i = 0; i < BUTTONS_COUNT; ++i) {
+        ButtonInterface::instance->setButtonState(i);
+    }
+
+    // Debounce the button press using the last press time comparison
+    if ((currentTime - lastPressTime) > PCI_DEBOUNCE_TIME) {
+        for (int i = 0; i < BUTTONS_COUNT; ++i) {
+
+            // Handle interupt if any bit is '1' (button pressed)
+            if (ButtonInterface::instance->readButton(buttonBits[i])) {
+                ButtonInterface::instance->handleButtonAction(i);
+            }
+        }
+    }
+
+    // Update last press time for next button press
+    lastPressTime = currentTime;
 }
 
 //======================================================================
@@ -134,18 +154,25 @@ void ButtonInterface::updateButtonStates() {
 //                  and handles the button action.
 //======================================================================
 bool ButtonInterface::readButton(unsigned char buttonBit) {
-    // Use the bit definitions from mcu_mapping.h (LED_GREEN_BIT, etc.)
+    // Button register bits as defined in 'mcu_mapping.h'
     return !(BUTTONS_PIN & (1 << buttonBit));
 }
 
-ButtonStatus ButtonInterface::buttonDebounce(unsigned char btn) {
-    // Set button press stable when X consecutive reads are the same
-    unsigned char bitMask = debounceBitMask;
+void ButtonInterface::setButtonState(int buttonIndex) {
+    // Shift the current bits to the left to make room for the new state
+    buttonStates[buttonIndex] <<= 1;
 
-    // Check the state of the button and return button status
-    if((btn & bitMask) == bitMask) return BUTTON_PRESSED;
-    if((btn & bitMask) == 0)       return BUTTON_RELEASED;
-    return  BUTTON_BOUNCING;
+    // Read the current button state and set the least significant bit
+    if (readButton(buttonBits[buttonIndex])) {
+        // Set the least significant bit to '1' for pressed state
+        buttonStates[buttonIndex] |= 0x01;
+    }
+}
+
+void ButtonInterface::resetButtonStates() {
+    for (int i = 0; i < BUTTONS_COUNT; ++i) {
+        buttonStates[i] = 0; // Set all button states to '00000000'
+    }
 }
 
 void ButtonInterface::handleButtonAction(int buttonIndex) {
@@ -153,6 +180,27 @@ void ButtonInterface::handleButtonAction(int buttonIndex) {
         case 0: LED.greenToggle(); break;
         case 1: LED.redToggle();   break;
         case 2: LED.blueToggle();  break;
-        // Add pin mapping in 'mcu_mapping.h' for more buttons and logic here...
     }
+
+    // Only used for the 'button state' command in the CommandParser
+    actionTriggered = true;
+
+    // Reset the button states after handling the action
+    resetButtonStates();
+}
+
+//======================================================================
+// Private Method: buttonDebounce
+// Description:    Debounces the button input using a bit mask to check
+//                 if X consecutive reads are the same. This is only 
+//                 used for the Timer 2 overflow interupt option.
+//======================================================================
+ButtonStatus ButtonInterface::buttonDebounce(unsigned char btn) {
+    // Set button press stable when X consecutive reads are the same
+    unsigned char bitMask = TIMER_DEBOUNCE_BITMASK;
+
+    // Check the state of the button and return button status
+    if((btn & bitMask) == bitMask) return BUTTON_PRESSED;
+    if((btn & bitMask) == 0)       return BUTTON_RELEASED;
+    return  BUTTON_BOUNCING;
 }

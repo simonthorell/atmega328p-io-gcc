@@ -30,11 +30,21 @@ void ButtonCommand::execute(const char* command) {
 void ButtonCommand::printButtonState(ButtonInterface& button) {
     unsigned char lastPrintedStates[BUTTONS_COUNT] = {0};
 
+    // Reset actionTriggered flag in case it was set by a previous command
+    button.actionTriggered = false;
+
     // Set loop cancel condition after 35 presses/bounces
     uint8_t pressCounter = 35;
 
     while(1) {
         for (int i = 0; i < BUTTONS_COUNT; ++i) {
+
+            if (button.actionTriggered) {
+                serial.print("Button action triggered!\n");
+                button.actionTriggered = false; // Reset actionTriggered flag
+            }
+
+
             if (button.buttonStates[i] != lastPrintedStates[i]) {
                 // Update state and prepare for printing
                 lastPrintedStates[i] = button.buttonStates[i];
