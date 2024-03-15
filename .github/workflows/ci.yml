@@ -5,7 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md' # Ignore markdown changes in PRs for builds 
+      - '**.md' # Ignore markdown changes in PRs for builds
+  # push:
+  #   branches:
+  #     - main
 
 permissions:
   contents: write
