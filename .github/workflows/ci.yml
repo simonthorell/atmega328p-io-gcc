@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/yourproject.hex # Update this path
+          asset_path: ./build/avr-firmware.hex
           asset_name: yourproject-${{ github.run_number }}.hex
           asset_content_type: application/octet-stream
 
@@ -72,6 +72,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/yourproject.elf # Update this path
+          asset_path: ./build/avr-firmware.elf
           asset_name: yourproject-${{ github.run_number }}.elf
           asset_content_type: application/octet-stream
