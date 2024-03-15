@@ -1,0 +1,72 @@
+name: AVR Build and Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md' # Ignore markdown changes in PRs for builds
+  push:
+    branches:
+      - main # Consider builds on push to main as well, adjust as needed
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      # Build the Docker image from Dockerfile in the .devcontainer directory
+      - name: Build Docker Image
+        run: docker build .devcontainer --file .devcontainer/Dockerfile --tag my-dev-container
+
+      # Run commands inside the Docker container
+      - name: Configure CMake
+        run: docker run --rm -v $PWD:/project -w /project my-dev-container cmake -S . -B build
+
+      - name: Build
+        run: |
+          docker run --rm -v $PWD:/project -w /project my-dev-container mkdir -p build
+          docker run --rm -v $PWD:/project -w /project my-dev-container cmake --build build
+
+      # Archive the compiled artifacts for upload
+      - name: Archive Production Artifacts for Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: compiled-artifacts
+          path: |
+            build/*.hex
+            build/*.elf
+
+      # Create a release and upload the compiled artifacts
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload .HEX File to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/yourproject.hex # Update this path
+          asset_name: yourproject-${{ github.run_number }}.hex
+          asset_content_type: application/octet-stream
+
+      - name: Upload .ELF File to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/yourproject.elf # Update this path
+          asset_name: yourproject-${{ github.run_number }}.elf
+          asset_content_type: application/octet-stream
