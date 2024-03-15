@@ -63,7 +63,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/avr-firmware.hex
-          asset_name: yourproject-${{ github.run_number }}.hex
+          asset_name: avr-firmware-${{ github.run_number }}.hex
           asset_content_type: application/octet-stream
 
       - name: Upload .ELF File to Release
@@ -73,5 +73,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/avr-firmware.elf
-          asset_name: yourproject-${{ github.run_number }}.elf
+          asset_name: avr-firmware-${{ github.run_number }}.elf
           asset_content_type: application/octet-stream
