@@ -15,6 +15,11 @@ permissions:
   issues: write
   pull-requests: write
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
