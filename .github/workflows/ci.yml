@@ -6,9 +6,9 @@ on:
       - main
     paths-ignore:
       - '**.md' # Ignore markdown changes in PRs for builds
-  push:
-    branches:
-      - main # Consider builds on push to main as well, adjust as needed
+  # push:
+  #   branches:
+  #     - main
 
 permissions:
   contents: write
@@ -20,7 +20,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # required for github-action-get-previous-tag
       
       # Build the Docker image from Dockerfile in the .devcontainer directory
       - name: Build Docker Image
@@ -44,6 +47,19 @@ jobs:
             build/*.hex
             build/*.elf
 
+      # Get latest release number
+      - name: Get Previous tag
+        id: previoustag
+        uses: 'WyriHaximus/github-action-get-previous-tag@v1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Get next version
+        id: next
+        uses: 'WyriHaximus/github-action-next-release-version@1.0.0'
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+
       # Create a release and upload the compiled artifacts
       - name: Create Release
         id: create_release
@@ -51,10 +67,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: release-${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
+          tag_name: ${{ steps.next.outputs.version }}
+          release_name: Release ${{ steps.next.outputs.version }}
+          draft: false # Make the release public (true makes it visible only to collaborators)
+          prerelease: false # Indicate that this is unstable pre-release
 
       - name: Upload .HEX File to Release
         uses: actions/upload-release-asset@v1
@@ -63,7 +79,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/avr-firmware.hex
-          asset_name: avr-firmware-${{ github.run_number }}.hex
+          asset_name: avr-firmware.hex
           asset_content_type: application/octet-stream
 
       - name: Upload .ELF File to Release
@@ -73,5 +89,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/avr-firmware.elf
-          asset_name: avr-firmware-${{ github.run_number }}.elf
+          asset_name: avr-firmware.elf
           asset_content_type: application/octet-stream
