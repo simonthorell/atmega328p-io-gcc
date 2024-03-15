@@ -10,6 +10,11 @@ on:
     branches:
       - main # Consider builds on push to main as well, adjust as needed
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
