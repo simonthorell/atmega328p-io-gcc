@@ -62,6 +62,35 @@ jobs:
         with:
           version: ${{ steps.previoustag.outputs.tag }}
 
+      # Compute the next version based on the previous tag
+      - name: Compute Next Version
+        id: compute_version
+        run: |
+          PREVIOUS_TAG=${{ steps.previoustag.outputs.tag }}
+          IFS='.' read -ra VERSION <<< "$PREVIOUS_TAG"
+          MAJOR=${VERSION[0]}
+          MINOR=${VERSION[1]}
+          PATCH=${VERSION[2]}
+
+          # Increment the version
+          if [ "$MINOR" -eq 9 ] && [ "$PATCH" -eq 9 ]; then
+              # If both minor and patch are at 9, increment major and reset others
+              MAJOR=$((MAJOR+1))
+              MINOR=0
+              PATCH=0
+          elif [ "$PATCH" -eq 9 ]; then
+              # If patch is at 9, increment minor and reset patch
+              MINOR=$((MINOR+1))
+              PATCH=0
+          else
+              # Default behavior: increment patch
+              PATCH=$((PATCH+1))
+          fi
+
+          NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "Next version: $NEXT_VERSION"
+          echo "::set-output name=version::$NEXT_VERSION"
+
       # Create a release and upload the compiled artifacts
       - name: Create Release
         id: create_release
@@ -69,8 +98,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.semver.outputs.patch }}
-          release_name: Release ${{ steps.semver.outputs.patch }}
+          tag_name: ${{ steps.compute_version.outputs.version }}
+          release_name: Release ${{ steps.compute_version.outputs.version }}
           draft: false # Make the release public (true makes it visible only to collaborators)
           prerelease: false # Indicate that this is unstable pre-release
 
