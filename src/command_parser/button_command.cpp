@@ -13,12 +13,10 @@ void ButtonCommand::execute(const char* command) {
     if (strcmp(command, "button timer interupt") == 0) {
         button.setInterruptType(TIMER_2_INTERUPT);
     }
-
-    if (strcmp(command, "button pci interupt") == 0) {
+    else if (strcmp(command, "button pci interupt") == 0) {
         button.setInterruptType(PIN_CHANGE_INTERUPT);
     }
-
-    if (strcmp(command, "button state") == 0) {
+    else if (strcmp(command, "button state") == 0) {
         printButtonState(this->button);
     }
 }
