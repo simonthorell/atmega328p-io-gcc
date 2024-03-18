@@ -23,19 +23,16 @@ void PWMCommand::execute(const char* command) {
     if (strcmp(command, "pwm led pot") == 0) {
         potControlLED();
     }
-
     // Set LED brightness based on a command input
-    if (strncmp(command, "pwm led ", 8) == 0) {
+    else if (strncmp(command, "pwm led ", 8) == 0) {
         commandControlLED(pwm, command);
     }
-
     // Set PWM output and read ADC input
-    if (strncmp(command, "pwm adc ", 8) == 0) {
+    else if (strncmp(command, "pwm adc ", 8) == 0) {
         adcControlPwm(serial, pwm, adc, command);
     }
-
     // Set PWM output, lower it by 10% and auto-adjust the PWM voltage using ADC input
-    if (strncmp(command, "pwm auto adc ", 13) == 0) {
+    else if (strncmp(command, "pwm auto adc ", 13) == 0) {
         adcAutoAdjustPwm(serial, pwm, adc, command);
     }
 }
